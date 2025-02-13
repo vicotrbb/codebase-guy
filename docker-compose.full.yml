@@ -1,0 +1,59 @@
+version: "3.8"
+
+services:
+  ollama:
+    container_name: ollama
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    restart: always
+    volumes:
+      - ollama:/root/.ollama
+
+  embedding:
+    container_name: embedding-service
+    build:
+      context: ./services/embedding
+      dockerfile: Dockerfile
+    ports:
+      - "5050:5050"
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+
+  codebase-guy:
+    container_name: codebase-guy
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    restart: always
+    depends_on:
+      - embedding
+
+  postgres:
+    image: ankane/pgvector:latest
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: codebase-guy
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    restart: always
+
+volumes:
+  pgdata:
+  redisdata:
+  ollama:
