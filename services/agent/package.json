@@ -1,0 +1,32 @@
+{
+  "name": "agent",
+  "version": "0.1.0",
+  "description": "Codebase indexer agent",
+  "main": "dist/agent.js",
+  "bin": {
+    "codebase-agent": "dist/agent.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "pkg": "rm -f ./executables/guy-agent-linux && rm -f ./executables/guy-agent-macos && rm -f ./executables/guy-agent-win.exe && pkg . --targets node18-linux-x64,node18-macos-x64,node18-win-x64 --output ./executables/guy-agent",
+    "agent": "ts-node src/agent.ts"
+  },
+  "author": "Victor Bona",
+  "license": "MIT",
+  "dependencies": {
+    "chokidar": "^4.0.3",
+    "typescript": "^5.7.3",
+    "yargs": "^17.7.2"
+  },
+  "pkg": {
+    "scripts": "dist/**/*.js",
+    "assets": []
+  },
+  "devDependencies": {
+    "@types/chokidar": "^1.7.5",
+    "@types/node": "^22.13.1",
+    "@types/yargs": "^17.0.33",
+    "pkg": "^5.8.1",
+    "ts-node": "^10.9.2"
+  }
+}
