@@ -1,19 +1,39 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { AgentStatus } from "@/types";
+import { type NextRequest, NextResponse } from "next/server";
 
-export async function POST(request: NextRequest, { params }: { params: { agentId: string } }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { agentId: string } }
+) {
   try {
-    const { agentId } = params
+    const { agentId } = params;
 
-    // Log the heartbeat (for demonstration purposes)
-    console.log(`Received heartbeat from agent: ${agentId}`)
+    console.log(`Received heartbeat from agent: ${agentId}`);
 
-    // In a real implementation, you would update the agent's last heartbeat timestamp in the database
+    const agent = await prisma?.agent.findFirst({
+      where: {
+        id: agentId,
+      },
+    });
 
-    // Return a 200 OK response
-    return NextResponse.json({ message: "Heartbeat received successfully" }, { status: 200 })
+    if (!agent) {
+      return NextResponse.json({ error: "Agent not found" }, { status: 404 });
+    }
+
+    await prisma?.agent.update({
+      where: { id: agentId },
+      data: { lastHeartBeatAt: new Date(), status: AgentStatus.ONLINE },
+    });
+
+    return NextResponse.json(
+      { message: "Heartbeat received successfully" },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error("Error processing heartbeat:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    console.error("Error processing heartbeat:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
-

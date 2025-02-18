@@ -1,20 +1,41 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/db";
+import { AgentStatus, ProjectStatus } from "@/types";
 
 export async function POST(request: NextRequest) {
   try {
-    // Parse the request body
-    const body = await request.json()
+    const { project, agentId } = await request.json();
 
-    // Log the registration attempt (for demonstration purposes)
-    console.log("Agent registration attempt:", body)
+    const newAgent = await prisma.agent.create({
+      data: {
+        id: agentId,
+        projectName: project,
+        status: AgentStatus.STARTING,
+        lastHeartBeatAt: new Date(),
+      },
+    });
 
-    // In a real implementation, you would validate the input and perform the registration process here
+    const newProject = await prisma.project.create({
+      data: {
+        id: project,
+        name: project,
+        status: ProjectStatus.SYNCING,
+      },
+    });
 
-    // For now, just return a 200 OK response
-    return NextResponse.json({ message: "Agent registered successfully" }, { status: 200 })
+    return NextResponse.json(
+      {
+        message: "Agent registered successfully",
+        agent: newAgent,
+        project: newProject,
+      },
+      { status: 200 }
+    );
   } catch (error) {
-    console.error("Error in agent registration:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    console.error("Error in agent registration:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
-

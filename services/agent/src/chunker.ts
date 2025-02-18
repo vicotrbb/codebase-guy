@@ -4,6 +4,8 @@ export interface CodeChunk {
   text: string;
   start: number;
   end: number;
+  startLine: number;
+  endLine: number;
 }
 
 /**
@@ -34,11 +36,20 @@ export function chunkCodeByAST(code: string): CodeChunk[] {
       ts.isInterfaceDeclaration(node) ||
       ts.isEnumDeclaration(node)
     ) {
-      const chunkText = code.substring(node.getStart(), node.getEnd());
+      const start = node.getStart();
+      const end = node.getEnd();
+      const startLine =
+        ts.getLineAndCharacterOfPosition(sourceFile, start).line + 1; // +1 for 1-indexed line numbers
+      const endLine =
+        ts.getLineAndCharacterOfPosition(sourceFile, end).line + 1;
+      const chunkText = code.substring(start, end);
+
       chunks.push({
         text: chunkText,
         start: node.getStart(),
         end: node.getEnd(),
+        startLine,
+        endLine,
       });
     }
 

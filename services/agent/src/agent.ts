@@ -6,7 +6,6 @@ import * as path from "path";
 import { performance } from "perf_hooks";
 import crypto from "node:crypto";
 import { chunkCodeByAST } from "./chunker";
-import { generateEmbedding } from "./embedding";
 
 interface Args {
   folder: string;
@@ -183,20 +182,21 @@ async function processFile(filePath: string): Promise<void> {
     const content = await fs.readFile(filePath, "utf-8");
     const chunks = chunkCodeByAST(content);
 
-    for (const chunk of chunks) {
-      const embedding = await generateEmbedding(
-        chunk.text,
-        embeddingServiceUrl
-      );
+    console.log(`Processing file ${filePath} with ${chunks.length} chunks`);
 
+    for (const chunk of chunks) {
       const payload = {
         projectName,
         fileName: path.basename(filePath),
         filePath,
+        absolutePath: filePath,
         chunkText: chunk.text,
         chunkStart: chunk.start,
-        embedding,
+        chunkEnd: chunk.end,
+        chunkStartLine: chunk.startLine,
+        chunkEndLine: chunk.endLine,
       };
+
       const response = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

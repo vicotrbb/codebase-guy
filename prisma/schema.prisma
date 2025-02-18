@@ -1,0 +1,56 @@
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"] 
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  directUrl  = env("DATABASE_URL")
+  extensions = [pgvector(map: "vector", schema: "public")]
+}
+
+model agent {
+  id String @id @map("id")
+  projectName String @map("project_name")
+  status String @map("status") @default("STARTING")
+  lastHeartBeatAt DateTime @map("last_heart_beat_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("agent")
+}
+
+model project {
+  id String @id @default(uuid()) @map("id")
+  name String @map("name")
+  status String @map("status") @default("SYNCING")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("project")
+}
+
+model codeEmbedding {
+  id          String      @id @default(uuid()) @map("id")
+  projectName String @map("project_name")
+  fileName    String @map("file_name")
+  filePath    String @map("file_path")
+  absolutePath String @map("absolute_path")
+  chunkText   String @map("chunk_text")
+  chunkStart  Int @map("chunk_start")
+  chunkEnd    Int @map("chunk_end")
+  chunkStartLine Int @map("chunk_start_line")
+  chunkEndLine Int @map("chunk_end_line")
+  embedding   Unsupported("vector")? @map("embedding")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("code_embedding")
+}

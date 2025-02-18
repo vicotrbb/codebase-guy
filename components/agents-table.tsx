@@ -1,38 +1,48 @@
-import { useState, useEffect } from "react"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { StatusBadge } from "@/components/status-badge"
-import { Skeleton } from "@/components/ui/skeleton"
+"use client";
+
+import { useState, useEffect } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { StatusBadge } from "@/components/status-badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { AgentStatus } from "@/types";
 
 type Agent = {
-  id: string
-  projectName: string
-  agentId: string
-  status: "STARTING" | "ONLINE" | "STOPPED" | "ERROR"
-  lastHeartBeatAt: string
-}
+  id: string;
+  projectName: string;
+  agentId: string;
+  status: AgentStatus;
+  lastHeartBeatAt: string;
+};
 
 export function AgentsTable() {
-  const [agents, setAgents] = useState<Agent[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchAgents() {
       try {
-        const response = await fetch("/api/agents")
+        const response = await fetch("/api/agents");
         if (!response.ok) {
-          throw new Error("Failed to fetch agents")
+          throw new Error("Failed to fetch agents");
         }
-        const data = await response.json()
-        setAgents(data)
+        const data = await response.json();
+        setAgents(data);
       } catch (error) {
-        console.error("Error fetching agents:", error)
+        console.error("Error fetching agents:", error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     }
 
-    fetchAgents()
-  }, [])
+    fetchAgents();
+  }, []);
 
   return (
     <div className="rounded-md border">
@@ -68,7 +78,10 @@ export function AgentsTable() {
                 </TableRow>
               ))
             : agents.map((agent) => (
-                <TableRow key={agent.id} className="hover:bg-gray-50 transition-colors">
+                <TableRow
+                  key={agent.id}
+                  className="hover:bg-gray-50 transition-colors"
+                >
                   <TableCell className="font-medium">{agent.id}</TableCell>
                   <TableCell>{agent.projectName}</TableCell>
                   <TableCell>{agent.agentId}</TableCell>
@@ -81,24 +94,23 @@ export function AgentsTable() {
         </TableBody>
       </Table>
     </div>
-  )
+  );
 }
 
 function formatDate(dateString: string): string {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+  const date = new Date(dateString);
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
   if (diffInSeconds < 60) {
-    return `${diffInSeconds} seconds ago`
+    return `${diffInSeconds} seconds ago`;
   } else if (diffInSeconds < 3600) {
-    const minutes = Math.floor(diffInSeconds / 60)
-    return `${minutes} minute${minutes > 1 ? "s" : ""} ago`
+    const minutes = Math.floor(diffInSeconds / 60);
+    return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
   } else if (diffInSeconds < 86400) {
-    const hours = Math.floor(diffInSeconds / 3600)
-    return `${hours} hour${hours > 1 ? "s" : ""} ago`
+    const hours = Math.floor(diffInSeconds / 3600);
+    return `${hours} hour${hours > 1 ? "s" : ""} ago`;
   } else {
-    return date.toLocaleString()
+    return date.toLocaleString();
   }
 }
-
