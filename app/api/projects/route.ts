@@ -1,58 +1,26 @@
-import { ProjectStatus } from "@/types";
+import { Project } from "@/types";
 import { NextResponse } from "next/server";
 
-// Define the Project type
-type Project = {
-  name: string;
-  status: ProjectStatus;
-  agent: {
-    agentId: string;
-  };
-};
-
-// Mock data for projects
-const mockProjects: Project[] = [
-  {
-    name: "User Authentication Service",
-    status: ProjectStatus.SYNCING,
-    agent: {
-      agentId: "AUTH-001",
-    },
-  },
-  {
-    name: "Payment Processing System",
-    status: ProjectStatus.SYNCING,
-    agent: {
-      agentId: "PAY-002",
-    },
-  },
-  {
-    name: "Inventory Management",
-    status: ProjectStatus.ERROR,
-    agent: {
-      agentId: "INV-003",
-    },
-  },
-  {
-    name: "Customer Support Bot",
-    status: ProjectStatus.SYNCED,
-    agent: {
-      agentId: "SUP-004",
-    },
-  },
-  {
-    name: "Data Analytics Pipeline",
-    status: ProjectStatus.SYNCING,
-    agent: {
-      agentId: "DAT-005",
-    },
-  },
-];
-
 export async function GET() {
-  // Simulate a delay to mimic a real API call
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  try {
+    const foundProjects = await prisma?.project.findMany();
+    const projects: Array<Project> =
+      foundProjects?.map(
+        (project) =>
+          ({
+            id: project.id,
+            name: project.name,
+            status: project.status,
+            updatedAt: project.updatedAt.toISOString(),
+          } as Project)
+      ) ?? [];
 
-  // Return the mock projects data
-  return NextResponse.json(mockProjects);
+    return NextResponse.json(projects, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching projects:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
 }

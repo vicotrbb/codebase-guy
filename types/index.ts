@@ -20,9 +20,14 @@ export enum AgentStatus {
 export interface Agent {
   id: string;
   projectName: string;
-  agentId: string;
   status: AgentStatus;
   lastHeartBeatAt: string;
+}
+
+export interface Project {
+  name: string;
+  status: ProjectStatus;
+  updatedAt: string;
 }
 
 export {};

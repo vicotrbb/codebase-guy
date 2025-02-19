@@ -1,51 +1,26 @@
-import { Agent, AgentStatus } from "@/types";
+import { Agent } from "@/types";
 import { NextResponse } from "next/server";
 
-// Define the Agent type
-
-// Mock data for agents
-const mockAgents: Agent[] = [
-  {
-    id: "1",
-    projectName: "User Authentication Service",
-    agentId: "AUTH-001",
-    status: AgentStatus.ONLINE,
-    lastHeartBeatAt: new Date(Date.now() - 5 * 60000).toISOString(), // 5 minutes ago
-  },
-  {
-    id: "2",
-    projectName: "Payment Processing System",
-    agentId: "PAY-002",
-    status: AgentStatus.STARTING,
-    lastHeartBeatAt: new Date(Date.now() - 2 * 60000).toISOString(), // 2 minutes ago
-  },
-  {
-    id: "3",
-    projectName: "Inventory Management",
-    agentId: "INV-003",
-    status: AgentStatus.STOPPED,
-    lastHeartBeatAt: new Date(Date.now() - 120 * 60000).toISOString(), // 2 hours ago
-  },
-  {
-    id: "4",
-    projectName: "Customer Support Bot",
-    agentId: "SUP-004",
-    status: AgentStatus.ONLINE,
-    lastHeartBeatAt: new Date(Date.now() - 1 * 60000).toISOString(), // 1 minute ago
-  },
-  {
-    id: "5",
-    projectName: "Data Analytics Pipeline",
-    agentId: "DAT-005",
-    status: AgentStatus.ERROR,
-    lastHeartBeatAt: new Date(Date.now() - 30 * 60000).toISOString(), // 30 minutes ago
-  },
-];
-
 export async function GET() {
-  // Simulate a delay to mimic a real API call
-  await new Promise((resolve) => setTimeout(resolve, 500));
+  try {
+    const foundAgents = await prisma?.agent.findMany();
+    const agents: Array<Agent> =
+      foundAgents?.map(
+        (agent) =>
+          ({
+            id: agent.id,
+            projectName: agent.projectName,
+            status: agent.status,
+            lastHeartBeatAt: agent.lastHeartBeatAt.toISOString(),
+          } as Agent)
+      ) ?? [];
 
-  // Return the mock agents data
-  return NextResponse.json(mockAgents);
+    return NextResponse.json(agents, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching agents:", error);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
 }
