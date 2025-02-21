@@ -3,6 +3,7 @@ import "./globals.css";
 import type React from "react";
 import { Header } from "@/components/header";
 import "@/lib/db";
+import "@/types";
 
 const inter = Inter({ subsets: ["latin"] });
 

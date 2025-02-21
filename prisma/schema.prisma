@@ -1,6 +1,3 @@
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"] 
@@ -48,6 +45,7 @@ model codeEmbedding {
   chunkEnd    Int @map("chunk_end")
   chunkStartLine Int @map("chunk_start_line")
   chunkEndLine Int @map("chunk_end_line")
+  description String? @map("description")
   embedding   Unsupported("vector")? @map("embedding")
 
   createdAt DateTime @default(now()) @map("created_at")

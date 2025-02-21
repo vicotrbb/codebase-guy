@@ -1,6 +1,9 @@
 import { generateEmbedding } from "@/lib/embedding";
-import { ProjectStatus } from "@/types";
+import { queryLlm } from "@/lib/llm";
+import { AvailableModels, ProjectStatus } from "@/types";
 import { type NextRequest, NextResponse } from "next/server";
+
+const DESCRIPTION_MODEL = String(process.env.WEAK_MODEL) as AvailableModels;
 
 export async function POST(
   request: NextRequest,
@@ -30,7 +33,16 @@ export async function POST(
       progress,
     });
 
-    const embedding = await generateEmbedding(chunkText);
+    const prompt = `Generate a short (maximum 100 words), flat text without formatting, but meaningful and concise description for the following code chunk:\n${chunkText}`;
+    const { modelResponse: description } =
+      (await queryLlm(prompt, DESCRIPTION_MODEL)) ?? "";
+    const code = `
+    /**
+     * ${description ?? "No description provided"}
+     */
+    ${chunkText}
+    `;
+    const embedding = await generateEmbedding(code);
 
     const codeEmbedding = await prisma!.$executeRaw`
       INSERT INTO code_embedding (
@@ -45,6 +57,7 @@ export async function POST(
         chunk_start_line,
         chunk_end_line,
         embedding,
+        description,
         created_at,
         updated_at
       ) VALUES (
@@ -59,6 +72,7 @@ export async function POST(
         ${chunkStartLine},
         ${chunkEndLine},
         ${embedding},
+        ${description},
         CURRENT_TIMESTAMP,
         CURRENT_TIMESTAMP
       )

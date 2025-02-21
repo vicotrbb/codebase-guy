@@ -5,7 +5,6 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Download and install the Ollama binary (this URL is hypothetical—adjust as needed)
 RUN curl -L -o /usr/local/bin/ollama https://ollama.com/download/ollama-linux \
     && chmod +x /usr/local/bin/ollama
 

@@ -41,3 +41,5 @@ const queryLlm = async (query: string, model: AvailableModels) => {
 };
 
 export { queryLlm };
+
+export class LLM {}

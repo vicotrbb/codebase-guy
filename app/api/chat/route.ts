@@ -1,11 +1,17 @@
 import { errorMessage, noResultsMessage } from "@/lib/defaultMessages";
 import { generateEmbedding } from "@/lib/embedding";
 import { queryLlm } from "@/lib/llm";
-import { RelatedProject, SystemChatMessage, UserChatMessage } from "@/types";
+import {
+  AvailableModels,
+  RelatedProject,
+  SystemChatMessage,
+  UserChatMessage,
+} from "@/types";
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
-const topN = 25;
+const topN = 20;
+const CHAT_MODEL = String(process.env.STRONG_MODEL) as AvailableModels;
 
 export type CodeEmbeddingQueryResult = Array<{
   projectName: string;
@@ -21,6 +27,7 @@ export type CodeEmbeddingQueryResult = Array<{
   projectId: string;
   createdAt: string;
   updatedAt: string;
+  description?: string;
 }>;
 
 export async function POST(request: Request) {
@@ -45,6 +52,7 @@ export async function POST(request: Request) {
         "CodeEmbedding"."chunk_end_line" as "chunkEndLine",
         "CodeEmbedding"."created_at" as "createdAt",
         "CodeEmbedding"."updated_at" as "updatedAt",
+        "CodeEmbedding"."description" as "description",
         "CodeEmbedding"."embedding" <-> '[${userMessageEmbedding}]' AS distance,
         "Project"."id" as "projectId"
       FROM "code_embedding" "CodeEmbedding"
@@ -65,13 +73,48 @@ export async function POST(request: Request) {
 
     const context = results
       .map(
-        (r, idx) => `Chunk ${idx + 1} (File: ${r.fileName}):\n${r.chunkText}`
+        (chunk, idx) => `
+        Chunk ${idx + 1}
+        Project Name: ${chunk.projectName}
+        File Name: ${chunk.fileName}
+        Start Line: ${chunk.chunkStartLine}
+        End Line: ${chunk.chunkEndLine}
+        Description: ${chunk.description ?? "No description available"}
+        Code:
+        ${chunk.chunkText}
+        `
       )
-      .join("\n\n");
+      .join("\n");
 
-    const prompt = `Here is some context from the codebase:\n\n${context}\n\nQuestion: ${message}\nAnswer:`;
+    const prompt = `
+    You are an expert software engineer.
+    Your goal is to respond to the user's question based on the provided context. Remember that your main goal is to help the user understand the codebase, suggest changes, provide general advice and help them with their questions.
+    You will receive a list of constraints that you must follow.
+    The context provided is a list of code chunks that are related to the user's question, the description of each code chunk and the start and end lines of the code chunk.
+    The context is extracted using RAG (Retrieval-Augmented Generation) technique.
 
-    const { modelResponse } = await queryLlm(prompt, "llama3:latest");
+    Constraints:
+    - If the user's question is not related to the context, just say "I don't know" and suggest the user to ask a different question that might be a better fit.
+    - If the user's question is related to the context, respond to the question based on the context.
+    - Your response must be in markdown format.
+    - Your response must be concise and to the point.
+    - Your response must be easy to understand, helpful and actionable.
+    - Your response must be in the same language as the user's question.
+    - You are allowed to provide code snippets in your response using the markdown format \`\`\`code\`\`\` or \`\`\`code\`\`\`language.
+    - If the user question requires code examples, you must provide code examples.
+
+    Context:
+    ${context}
+
+    User Question:
+    ${message}
+    
+    Answer:
+    `;
+
+    console.log(prompt);
+
+    const { modelResponse } = await queryLlm(prompt, CHAT_MODEL);
     const grouppedProjects = results.reduce((acc, r) => {
       if (!acc[r.projectName]) {
         acc[r.projectName] = {

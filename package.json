@@ -8,9 +8,9 @@
     "start": "next start",
     "lint": "next lint",
     "db:generate": "npx prisma generate",
-    "db:migrate": "prisma migrate dev --create-only",
-    "db:push:dev": "prisma migrate dev",
-    "db:push": "prisma migrate deploy",
+    "db:migrate:generate": "prisma migrate dev --create-only",
+    "db:migrate:push:dev": "prisma migrate dev",
+    "db:migrate:push": "prisma migrate deploy",
     "db:studio": "prisma studio"
   },
   "dependencies": {

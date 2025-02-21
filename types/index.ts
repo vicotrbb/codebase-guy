@@ -1,6 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 
-export type AvailableModels = "llama3:latest";
+export type AvailableModels = "llama3:latest" | "llama3:8b" | "llama3.2:3b";
 
 declare global {
   var prisma: PrismaClient;
