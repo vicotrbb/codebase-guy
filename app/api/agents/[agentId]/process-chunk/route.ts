@@ -1,4 +1,5 @@
 import { generateEmbedding } from "@/lib/embedding";
+import { ProjectStatus } from "@/types";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(
@@ -17,18 +18,16 @@ export async function POST(
       chunkEnd,
       chunkStartLine,
       chunkEndLine,
+      progress,
     } = await request.json();
+
+    const { percentComplete } = progress;
 
     console.log(`Received process-chunk from agent: ${agentId}`, {
       projectName,
       fileName,
       filePath,
-      absolutePath,
-      chunkText,
-      chunkStart,
-      chunkEnd,
-      chunkStartLine,
-      chunkEndLine,
+      progress,
     });
 
     const embedding = await generateEmbedding(chunkText);
@@ -71,6 +70,23 @@ export async function POST(
         { status: 500 }
       );
     }
+
+    const project = await prisma?.project.findFirst({
+      where: { name: projectName },
+    });
+
+    if (!project) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+
+    await prisma?.project.update({
+      where: { id: project.id },
+      data: {
+        syncState: percentComplete,
+        updatedAt: new Date(),
+        ...(percentComplete === 100 && { status: ProjectStatus.SYNCED }),
+      },
+    });
 
     return NextResponse.json(
       { message: "process-chunk received successfully" },

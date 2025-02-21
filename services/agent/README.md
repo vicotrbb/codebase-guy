@@ -53,7 +53,7 @@ npm run pkg
 ### Command Line Arguments
 
 ```bash
-guy-agent --folder <path> --project <name> [options]
+guy-agent-xxx --folder <path> --project <name> [options]
 ```
 
 #### Required Arguments:
@@ -64,7 +64,6 @@ guy-agent --folder <path> --project <name> [options]
 #### Optional Arguments:
 
 - `--baseUrl, -r`: Base URL for the Codebase Guy server (default: "http://localhost:3000")
-- `--embeddingServiceUrl, -e`: URL for the embedding service (default: "http://localhost:5050")
 - `--heartbeatInterval, -i`: Interval for heartbeat signals in milliseconds
 
 ### Example Usage

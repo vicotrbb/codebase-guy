@@ -11,15 +11,7 @@ import {
 } from "@/components/ui/table";
 import { StatusBadge } from "@/components/status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AgentStatus } from "@/types";
-
-type Agent = {
-  id: string;
-  projectName: string;
-  agentId: string;
-  status: AgentStatus;
-  lastHeartBeatAt: string;
-};
+import { Agent } from "@/types";
 
 export function AgentsTable() {
   const [agents, setAgents] = useState<Agent[]>([]);
@@ -49,11 +41,10 @@ export function AgentsTable() {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-[100px]">ID</TableHead>
-            <TableHead>Project Name</TableHead>
             <TableHead>Agent ID</TableHead>
-            <TableHead className="w-[100px]">Status</TableHead>
-            <TableHead className="w-[200px]">Last Heartbeat</TableHead>
+            <TableHead>Project Name</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Last Heartbeat</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -65,9 +56,6 @@ export function AgentsTable() {
                   </TableCell>
                   <TableCell>
                     <Skeleton className="h-5 w-full" />
-                  </TableCell>
-                  <TableCell>
-                    <Skeleton className="h-5 w-24" />
                   </TableCell>
                   <TableCell>
                     <Skeleton className="h-5 w-16" />
@@ -84,7 +72,6 @@ export function AgentsTable() {
                 >
                   <TableCell className="font-medium">{agent.id}</TableCell>
                   <TableCell>{agent.projectName}</TableCell>
-                  <TableCell>{agent.agentId}</TableCell>
                   <TableCell>
                     <StatusBadge status={agent.status} />
                   </TableCell>

@@ -5,15 +5,17 @@ export async function GET() {
   try {
     const foundAgents = await prisma?.agent.findMany();
     const agents: Array<Agent> =
-      foundAgents?.map(
-        (agent) =>
-          ({
-            id: agent.id,
-            projectName: agent.projectName,
-            status: agent.status,
-            lastHeartBeatAt: agent.lastHeartBeatAt.toISOString(),
-          } as Agent)
-      ) ?? [];
+      !!foundAgents && foundAgents.length > 0
+        ? foundAgents?.map(
+            (agent) =>
+              ({
+                id: agent.id,
+                projectName: agent.projectName,
+                status: agent.status,
+                lastHeartBeatAt: agent.lastHeartBeatAt.toISOString(),
+              } as Agent)
+          )
+        : [];
 
     return NextResponse.json(agents, { status: 200 });
   } catch (error) {

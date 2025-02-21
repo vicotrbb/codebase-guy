@@ -6,19 +6,29 @@ export async function POST(request: NextRequest) {
   try {
     const { project, agentId } = await request.json();
 
-    const newAgent = await prisma.agent.create({
-      data: {
+    const newAgent = await prisma.agent.upsert({
+      where: { id: agentId },
+      create: {
         id: agentId,
         projectName: project,
         status: AgentStatus.STARTING,
         lastHeartBeatAt: new Date(),
       },
+      update: {
+        id: agentId,
+        status: AgentStatus.STARTING,
+        lastHeartBeatAt: new Date(),
+      },
     });
 
-    const newProject = await prisma.project.create({
-      data: {
+    const newProject = await prisma.project.upsert({
+      where: { id: project },
+      create: {
         id: project,
         name: project,
+        status: ProjectStatus.SYNCING,
+      },
+      update: {
         status: ProjectStatus.SYNCING,
       },
     });

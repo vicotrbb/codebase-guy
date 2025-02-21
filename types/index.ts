@@ -1,7 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 
+export type AvailableModels = "llama3:latest";
+
 declare global {
-  var prisma: PrismaClient | undefined;
+  var prisma: PrismaClient;
 }
 
 export enum ProjectStatus {
@@ -25,9 +27,33 @@ export interface Agent {
 }
 
 export interface Project {
+  id: string;
   name: string;
   status: ProjectStatus;
   updatedAt: string;
+  syncState: number;
+}
+
+export interface UserChatMessage {
+  message: string;
+  references?: Array<string>;
+}
+
+export interface RelatedFile {
+  name: string;
+  path: string;
+  absolutePath: string;
+}
+
+export interface RelatedProject {
+  id: string;
+  name: string;
+  relatedFiles: RelatedFile[];
+}
+
+export interface SystemChatMessage {
+  message: string;
+  relatedProjects: RelatedProject[];
 }
 
 export {};

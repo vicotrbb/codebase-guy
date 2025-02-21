@@ -9,6 +9,7 @@
   "scripts": {
     "build": "tsc",
     "pkg": "rm -f ./executables/guy-agent-linux && rm -f ./executables/guy-agent-macos && rm -f ./executables/guy-agent-win.exe && pkg . --targets node18-linux-x64,node18-macos-x64,node18-win-x64 --output ./executables/guy-agent",
+    "compile": "npm run build && npm run pkg",
     "agent": "ts-node src/agent.ts"
   },
   "author": "Victor Bona",

@@ -7,11 +7,27 @@ import { performance } from "perf_hooks";
 import crypto from "node:crypto";
 import { chunkCodeByAST } from "./chunker";
 
+export const DEFAULT_IGNORE_PATTERNS = [
+  "node_modules/",
+  ".venv/",
+  "dist/",
+  ".git/",
+  ".next/",
+  ".env",
+  ".env.local",
+  ".env.development",
+  ".env.production",
+  ".env.test",
+  ".env.test.local",
+  ".vscode/",
+];
+
+export const SUPPORTED_FILE_EXTENSIONS = ["js", "ts", "jsx", "tsx"];
+
 interface Args {
   folder: string;
   project: string;
   baseUrl: string;
-  embeddingServiceUrl: string;
   heartbeatInterval: number;
 }
 
@@ -37,13 +53,6 @@ const argv = yargs(hideBin(process.argv))
     demandOption: true,
     default: "http://localhost:3000",
   })
-  .option("embeddingServiceUrl", {
-    alias: "e",
-    type: "string",
-    description: "URL for the embedding service.",
-    demandOption: true,
-    default: "http://localhost:5050",
-  })
   .option("heartbeatInterval", {
     alias: "i",
     type: "number",
@@ -59,7 +68,6 @@ const projectFolder = args.folder;
 const projectName = args.project;
 const baseUrl = args.baseUrl;
 const heartbeatInterval = args.heartbeatInterval;
-const embeddingServiceUrl = args.embeddingServiceUrl;
 
 // Generate a unique agent ID with the project name abbreviation and the first 8 characters of a hash from the project name
 const agentId = `${projectName.slice(0, 6).toUpperCase()}-${crypto
@@ -68,11 +76,48 @@ const agentId = `${projectName.slice(0, 6).toUpperCase()}-${crypto
   .digest("hex")
   .substring(0, 8)}`;
 
+let ignorePatterns: string[] = [];
+
+// Add these variables at the top level with other global variables
+let totalFilesToProcess = 0;
+let filesProcessed = 0;
+
+/**
+ * Loads ignore patterns from .agentignore file
+ */
+async function loadIgnorePatterns(): Promise<string[]> {
+  try {
+    const ignoreFile = await fs.readFile(
+      path.join(projectFolder, ".agentignore"),
+      "utf-8"
+    );
+    return ignoreFile
+      .split("\n")
+      .map((line) => line.trim())
+      .filter((line) => line && !line.startsWith("#"));
+  } catch (error) {
+    console.log("No .agentignore file found, using default ignores");
+    return DEFAULT_IGNORE_PATTERNS;
+  }
+}
+
+/**
+ * Checks if a path should be ignored based on ignore patterns
+ */
+function shouldIgnore(filePath: string, patterns: string[]): boolean {
+  const relativePath = path.relative(projectFolder, filePath);
+  return patterns.some((pattern) => {
+    // Remove trailing slash for directory patterns
+    const cleanPattern = pattern.replace(/\/$/, "");
+    return relativePath.startsWith(cleanPattern);
+  });
+}
+
 /**
  * Registers the agent by sending a POST request to `${baseRegisterUrl}/agents/register`.
  */
 async function registerAgent(): Promise<void> {
-  const url = `${baseUrl}/agents/register`;
+  const url = `${baseUrl}/api/agents/register`;
   const payload = { project: projectName, agentId };
   try {
     const response = await fetch(url, {
@@ -95,7 +140,7 @@ async function registerAgent(): Promise<void> {
  * Sends a heartbeat to `${baseRegisterUrl}/agents/${agentId}/heartbeat`.
  */
 async function sendHeartbeat(): Promise<void> {
-  const url = `${baseUrl}/agents/${agentId}/heartbeat`;
+  const url = `${baseUrl}/api/agents/${agentId}/heartbeat`;
   const payload = {
     project: projectName,
     agentId,
@@ -124,7 +169,7 @@ async function sendHeartbeat(): Promise<void> {
  * `${baseRegisterUrl}/agents/${agentId}/down`.
  */
 async function sendTermination(): Promise<void> {
-  const url = `${baseUrl}/agents/${agentId}/down`;
+  const url = `${baseUrl}/api/agents/${agentId}/down`;
   const payload = {
     project: projectName,
     agentId,
@@ -152,16 +197,25 @@ async function sendTermination(): Promise<void> {
  * Recursively retrieves all files in a directory filtering by extension.
  */
 async function getFiles(dir: string): Promise<string[]> {
+  if (!ignorePatterns.length) {
+    ignorePatterns = await loadIgnorePatterns();
+  }
+
   let results: string[] = [];
   const list = await fs.readdir(dir);
 
   for (const file of list) {
     const filePath = path.join(dir, file);
-    const stat = await fs.stat(filePath);
+    if (shouldIgnore(filePath, ignorePatterns)) {
+      continue;
+    }
 
+    const stat = await fs.stat(filePath);
     if (stat.isDirectory()) {
       results = results.concat(await getFiles(filePath));
-    } else if (/\.(js|ts|py)$/.test(file)) {
+    } else if (
+      SUPPORTED_FILE_EXTENSIONS.some((ext) => file.endsWith(`.${ext}`))
+    ) {
       results.push(filePath);
     }
   }
@@ -178,7 +232,7 @@ async function getFiles(dir: string): Promise<string[]> {
  */
 async function processFile(filePath: string): Promise<void> {
   try {
-    const url = `${baseUrl}/agents/${agentId}/process-chunk`;
+    const url = `${baseUrl}/api/agents/${agentId}/process-chunk`;
     const content = await fs.readFile(filePath, "utf-8");
     const chunks = chunkCodeByAST(content);
 
@@ -195,6 +249,13 @@ async function processFile(filePath: string): Promise<void> {
         chunkEnd: chunk.end,
         chunkStartLine: chunk.startLine,
         chunkEndLine: chunk.endLine,
+        progress: {
+          totalFiles: totalFilesToProcess,
+          processedFiles: filesProcessed,
+          percentComplete: Math.round(
+            (filesProcessed / totalFilesToProcess) * 100
+          ),
+        },
       };
 
       const response = await fetch(url, {
@@ -206,9 +267,14 @@ async function processFile(filePath: string): Promise<void> {
       if (!response.ok) {
         console.error(`Failed to process chunk: ${response.statusText}`);
       }
+
+      setTimeout(() => null, 200);
     }
 
-    console.log(`Processed ${filePath} successfully`);
+    filesProcessed++;
+    console.log(
+      `Processed ${filePath} successfully (${filesProcessed}/${totalFilesToProcess})`
+    );
   } catch (err) {
     console.error(`Error processing file ${filePath}:`, err);
   }
@@ -219,7 +285,7 @@ async function processFile(filePath: string): Promise<void> {
  */
 async function deleteFolder(filePath: string): Promise<void> {
   try {
-    const url = `${baseUrl}/agents/${agentId}/delete-folder`;
+    const url = `${baseUrl}/api/agents/${agentId}/delete-folder`;
     const payload = { projectName, filePath };
     const response = await fetch(url, {
       method: "POST",
@@ -242,6 +308,8 @@ async function deleteFolder(filePath: string): Promise<void> {
  */
 async function initialScan(folder: string): Promise<void> {
   const files = await getFiles(folder);
+  totalFilesToProcess = files.length;
+  filesProcessed = 0;
 
   console.log(
     `Found ${files.length} files in ${folder}. Starting initial processing...`
@@ -259,24 +327,39 @@ async function initialScan(folder: string): Promise<void> {
  */
 function watchFolder(folder: string): void {
   const watcher = chokidar.watch(folder, {
-    ignored: /(^|[\/\\])\../, // ignore dotfiles
+    ignored: [
+      /(^|[\/\\])\./, // ignore dotfiles (keep this default)
+      ...ignorePatterns.map((pattern) => {
+        // Convert relative patterns to absolute patterns for chokidar
+        return path.join(projectFolder, pattern);
+      }),
+    ],
     persistent: true,
     ignoreInitial: true,
     usePolling: false, // minimal system impact
   });
 
   watcher
-    .on("add", (filePath) => {
-      console.log(`File added: ${filePath}`);
-      processFile(filePath);
+    .on("add", async (filePath) => {
+      if (/\.(js|ts|py)$/.test(filePath)) {
+        totalFilesToProcess++;
+        console.log(`File added: ${filePath}`);
+        await processFile(filePath);
+      }
     })
     .on("change", (filePath) => {
-      console.log(`File changed: ${filePath}`);
-      processFile(filePath);
+      if (/\.(js|ts|py)$/.test(filePath)) {
+        console.log(`File changed: ${filePath}`);
+        processFile(filePath);
+      }
     })
     .on("unlink", async (filePath) => {
-      console.log(`File removed: ${filePath}`);
-      await deleteFolder(filePath);
+      if (/\.(js|ts|py)$/.test(filePath)) {
+        totalFilesToProcess--;
+        filesProcessed = Math.max(0, filesProcessed - 1);
+        console.log(`File removed: ${filePath}`);
+        await deleteFolder(filePath);
+      }
     });
 }
 

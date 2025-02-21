@@ -5,15 +5,18 @@ export async function GET() {
   try {
     const foundProjects = await prisma?.project.findMany();
     const projects: Array<Project> =
-      foundProjects?.map(
-        (project) =>
-          ({
-            id: project.id,
-            name: project.name,
-            status: project.status,
-            updatedAt: project.updatedAt.toISOString(),
-          } as Project)
-      ) ?? [];
+      !!foundProjects && foundProjects.length > 0
+        ? foundProjects?.map(
+            (project) =>
+              ({
+                id: project.id,
+                name: project.name,
+                status: project.status,
+                syncState: project.syncState,
+                updatedAt: project.updatedAt.toISOString(),
+              } as Project)
+          )
+        : [];
 
     return NextResponse.json(projects, { status: 200 });
   } catch (error) {
