@@ -1,4 +1,4 @@
-import { AgentStatus } from "@/types";
+import { AgentStatus } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(

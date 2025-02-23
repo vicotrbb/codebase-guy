@@ -10,10 +10,17 @@ datasource db {
   extensions = [pgvector(map: "vector", schema: "public")]
 }
 
+enum AgentStatus {
+  STARTING
+  ONLINE
+  STOPPED
+  ERROR
+}
+
 model agent {
   id String @id @map("id")
   projectName String @map("project_name")
-  status String @map("status") @default("STARTING")
+  status AgentStatus @map("status") @default(STARTING)
   lastHeartBeatAt DateTime @map("last_heart_beat_at")
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -22,10 +29,16 @@ model agent {
   @@map("agent")
 }
 
+enum ProjectStatus {
+  SYNCING
+  SYNCED
+  ERROR
+}
+
 model project {
   id String @id @default(uuid()) @map("id")
   name String @map("name")
-  status String @map("status") @default("SYNCING")
+  status ProjectStatus @map("status") @default(SYNCING)
   syncState Int @map("sync_state") @default(0)
 
   createdAt DateTime @default(now()) @map("created_at")
@@ -52,4 +65,54 @@ model codeEmbedding {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("code_embedding")
+}
+
+enum ModelProvider {
+  OLLAMA
+  OPENAI
+
+  @@map("model_provider")
+}
+
+enum WebSearchProvider {
+  SERPER
+
+  @@map("web_search_provider")
+}
+
+enum CacheProvider {
+  REDIS
+
+  @@map("cache_provider")
+}
+
+model settings {
+  id String @id @default(uuid()) @map("id")
+  guyName String @map("guy_name") @default("Codebase Guy") @unique
+
+  embeddingServiceUrl String @map("embedding_service_url") @default("http://localhost:5050")
+
+  modelProvider ModelProvider @map("model_provider") @default(OLLAMA)
+  ollamaUrl String @map("ollama_url") @default("http://localhost:11434")
+  openApiCompatibleApiUrl String? @map("open_api_compatible_api_url")
+  modelApiKey String? @map("model_api_key")
+
+  weakModel String @map("weak_model") @default("llama3.2:3b")
+  strongModel String @map("strong_model") @default("llama3:latest")
+  reasoningModel String @map("reasoning_model") @default("llama3:latest")
+
+  cacheEnabled Boolean @map("cache_enabled") @default(false)
+  cacheProvider CacheProvider @map("cache_provider") @default(REDIS)
+  redisHost String? @map("redis_host")
+  redisPort String? @map("redis_port")
+
+  webSearchEnabled Boolean @map("web_search_enabled") @default(false)
+  webSearchProvider WebSearchProvider @map("web_search_provider") @default(SERPER)
+  serperUrl String? @map("serper_url")
+  serperApiKey String? @map("serper_api_key")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
 }

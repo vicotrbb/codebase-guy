@@ -1,22 +1,15 @@
-import { PrismaClient } from "@prisma/client";
-
-export type AvailableModels = "llama3:latest" | "llama3:8b" | "llama3.2:3b";
+import {
+  AgentStatus,
+  CacheProvider,
+  ModelProvider,
+  PrismaClient,
+  WebSearchProvider,
+  ProjectStatus,
+} from "@prisma/client";
 
 declare global {
   var prisma: PrismaClient;
-}
-
-export enum ProjectStatus {
-  SYNCING = "SYNCING",
-  SYNCED = "SYNCED",
-  ERROR = "ERROR",
-}
-
-export enum AgentStatus {
-  STARTING = "STARTING",
-  ONLINE = "ONLINE",
-  STOPPED = "STOPPED",
-  ERROR = "ERROR",
+  var settings: Settings;
 }
 
 export interface Agent {
@@ -54,6 +47,30 @@ export interface RelatedProject {
 export interface SystemChatMessage {
   message: string;
   relatedProjects: RelatedProject[];
+}
+
+export interface PublicSettings {
+  guyName: string;
+  modelProvider: ModelProvider;
+  weakModel: string;
+  strongModel: string;
+  reasoningModel: string;
+  cacheEnabled: boolean;
+  cacheProvider: CacheProvider;
+  webSearchEnabled: boolean;
+  webSearchProvider: WebSearchProvider;
+}
+
+export interface Settings extends PublicSettings {
+  id: string;
+  embeddingServiceUrl: string;
+  ollamaUrl: string;
+  openApiCompatibleApiUrl: string | null;
+  modelApiKey: string | null;
+  redisHost: string | null;
+  redisPort: string | null;
+  serperUrl: string | null;
+  serperApiKey: string | null;
 }
 
 export {};

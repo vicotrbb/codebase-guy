@@ -1,17 +1,11 @@
 import { errorMessage, noResultsMessage } from "@/lib/defaultMessages";
 import { generateEmbedding } from "@/lib/embedding";
 import { queryLlm } from "@/lib/llm";
-import {
-  AvailableModels,
-  RelatedProject,
-  SystemChatMessage,
-  UserChatMessage,
-} from "@/types";
+import { RelatedProject, SystemChatMessage, UserChatMessage } from "@/types";
 import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 const topN = 20;
-const CHAT_MODEL = String(process.env.STRONG_MODEL) as AvailableModels;
 
 export type CodeEmbeddingQueryResult = Array<{
   projectName: string;
@@ -112,9 +106,7 @@ export async function POST(request: Request) {
     Answer:
     `;
 
-    console.log(prompt);
-
-    const { modelResponse } = await queryLlm(prompt, CHAT_MODEL);
+    const { modelResponse } = await queryLlm(prompt, "llama3:latest");
     const grouppedProjects = results.reduce((acc, r) => {
       if (!acc[r.projectName]) {
         acc[r.projectName] = {

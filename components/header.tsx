@@ -1,26 +1,29 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Code, FolderKanban, Users, Menu, X } from "lucide-react"
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Code, FolderKanban, Users, Menu, X, Settings } from "lucide-react";
 
 export function Header() {
-  const pathname = usePathname()
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const pathname = usePathname();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
     { name: "Chat", href: "/", icon: Code },
     { name: "Projects", href: "/projects", icon: FolderKanban },
     { name: "Agents", href: "/agents", icon: Users },
-  ]
+    { name: "Settings", href: "/settings", icon: Settings },
+  ];
 
   return (
     <header className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0 flex items-center">
-            <span className="text-xl font-bold text-gray-900">Codebase Guy</span>
+            <span className="text-xl font-bold text-gray-900">
+              Codebase Guy
+            </span>
           </div>
           <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">
             {navItems.map((item) => (
@@ -78,6 +81,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }
-

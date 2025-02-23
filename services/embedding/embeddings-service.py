@@ -11,13 +11,13 @@ model = AutoModel.from_pretrained(MODEL_NAME)
 model.eval()
 
 def get_embedding(text: str):
-    inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=1024)
     with torch.no_grad():
         outputs = model(**inputs)
     embedding = outputs.last_hidden_state[:, 0, :].squeeze().tolist()
     return embedding
 
-@app.route("/embed", methods=["POST"])
+@app.route("/api/embeddings", methods=["POST"])
 def embed():
     data = request.get_json()
     text = data.get("text", "")
