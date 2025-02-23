@@ -2,7 +2,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import "@/lib/db";
 import "@/types";
-import "@/lib/settings";
 import { SettingsProvider } from "@/lib/providers/SettingsProvider";
 
 import type React from "react";

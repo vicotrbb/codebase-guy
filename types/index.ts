@@ -9,7 +9,6 @@ import {
 
 declare global {
   var prisma: PrismaClient;
-  var settings: Settings;
 }
 
 export interface Agent {

@@ -1,8 +1,10 @@
+import { getSettings } from "@/lib/settings";
 import { ModelProvider } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
   try {
+    const settings = await getSettings();
     const { searchParams } = request.nextUrl;
     const provider = searchParams.get("provider") as ModelProvider;
     const overrideUrl = searchParams.get("overrideUrl");

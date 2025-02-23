@@ -21,6 +21,7 @@ export async function PATCH(request: Request) {
       where: { id: settings.id },
       data: settings,
     });
+
     return NextResponse.json(updatedSettings, { status: 200 });
   } catch (error) {
     console.error("Error updating settings:", error);

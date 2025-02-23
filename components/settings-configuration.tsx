@@ -71,6 +71,7 @@ export function SettingsConfiguration({
   const router = useRouter();
   const [availableModels, setAvailableModels] = useState<Model[]>([]);
   const [mounted, setMounted] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
   const form = useForm<SettingsFormValues>({
     resolver: zodResolver(settingsFormSchema),
     defaultValues: {
@@ -93,7 +94,7 @@ export function SettingsConfiguration({
       try {
         const url = new URL("/api/models", window.location.origin);
         url.searchParams.set("provider", provider);
-        if (overrideUrl) {
+        if (overrideUrl && !isInitialLoad) {
           url.searchParams.set("overrideUrl", overrideUrl);
         }
 
@@ -106,22 +107,26 @@ export function SettingsConfiguration({
         setAvailableModels([]);
       }
     },
-    []
+    [isInitialLoad]
   );
 
-  // Debounced version of fetchModels
+  // Debounced version of fetchModels for URL changes
   const debouncedFetchModels = useMemo(
     () =>
       debounce((provider: ModelProvider, overrideUrl?: string) => {
-        fetchModels(provider, overrideUrl);
+        if (!isInitialLoad) {
+          fetchModels(provider, overrideUrl);
+        }
       }, 500),
-    [fetchModels]
+    [fetchModels, isInitialLoad]
   );
 
   // Effect for initial model fetch and provider changes
   useEffect(() => {
     if (modelProvider) {
-      if (modelProvider === ModelProvider.OLLAMA && ollamaUrl) {
+      if (isInitialLoad) {
+        fetchModels(modelProvider);
+      } else if (modelProvider === ModelProvider.OLLAMA && ollamaUrl) {
         debouncedFetchModels(modelProvider, ollamaUrl);
       } else if (
         modelProvider === ModelProvider.OPENAI &&
@@ -132,7 +137,14 @@ export function SettingsConfiguration({
         debouncedFetchModels(modelProvider);
       }
     }
-  }, [modelProvider, ollamaUrl, openApiCompatibleApiUrl, debouncedFetchModels]);
+  }, [
+    modelProvider,
+    ollamaUrl,
+    openApiCompatibleApiUrl,
+    debouncedFetchModels,
+    isInitialLoad,
+    fetchModels,
+  ]);
 
   // Clean up debounce on unmount
   useEffect(() => {
@@ -147,10 +159,19 @@ export function SettingsConfiguration({
       if (!response.ok) throw new Error("Failed to fetch settings");
       const settings = await response.json();
       form.reset(settings);
+
+      // After settings are loaded, fetch initial models
+      if (settings.modelProvider) {
+        await fetchModels(settings.modelProvider);
+      }
+
+      // Mark initial load as complete after fetching both settings and models
+      setIsInitialLoad(false);
     } catch (error) {
       console.error("Error fetching settings:", error);
+      setIsInitialLoad(false);
     }
-  }, [form]);
+  }, [form, fetchModels]);
 
   useEffect(() => {
     fetchSettings();

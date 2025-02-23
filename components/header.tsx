@@ -4,8 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Code, FolderKanban, Users, Menu, X, Settings } from "lucide-react";
+import { usePublicSettings } from "@/lib/providers/SettingsProvider";
 
 export function Header() {
+  const settings = usePublicSettings();
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -22,7 +24,7 @@ export function Header() {
         <div className="flex justify-between items-center h-16">
           <div className="flex-shrink-0 flex items-center">
             <span className="text-xl font-bold text-gray-900">
-              Codebase Guy
+              {settings?.guyName}
             </span>
           </div>
           <nav className="hidden sm:ml-6 sm:flex sm:space-x-8">
