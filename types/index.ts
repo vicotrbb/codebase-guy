@@ -29,6 +29,9 @@ export interface Project {
 export interface UserChatMessage {
   message: string;
   references?: Array<string>;
+  chainOfThought: boolean;
+  webSearch: boolean;
+  yoloMode: boolean;
 }
 
 export interface RelatedFile {

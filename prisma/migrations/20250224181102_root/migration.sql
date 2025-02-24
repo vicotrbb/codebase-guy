@@ -80,6 +80,7 @@ CREATE TABLE "settings" (
     "web_search_provider" "web_search_provider" NOT NULL DEFAULT 'SERPER',
     "serper_url" TEXT,
     "serper_api_key" TEXT,
+    "allow_yolo_mode" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 

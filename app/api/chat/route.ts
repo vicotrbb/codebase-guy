@@ -26,9 +26,8 @@ export type CodeEmbeddingQueryResult = Array<{
 
 export async function POST(request: Request) {
   try {
-    const { message } = (await request.json()) as UserChatMessage;
-
-    console.log("Received message:", message);
+    const { message, chainOfThought, webSearch, yoloMode } =
+      (await request.json()) as UserChatMessage;
 
     const userMessageEmbedding = await generateEmbedding(message);
 
