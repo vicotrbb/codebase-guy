@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SendIcon, BrainCircuitIcon, SearchIcon, ZapIcon } from "lucide-react";
+import {
+  SendIcon,
+  BrainCircuitIcon,
+  SearchIcon,
+  ZapIcon,
+  TicketIcon,
+} from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -17,6 +23,7 @@ interface ChatInputProps {
     chainOfThought: boolean;
     webSearch: boolean;
     yoloMode: boolean;
+    ticketResolver: boolean;
   }) => void;
 }
 
@@ -25,15 +32,17 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
   const [chainOfThought, setChainOfThought] = useState(false);
   const [webSearch, setWebSearch] = useState(false);
   const [yoloMode, setYoloMode] = useState(false);
+  const [ticketResolver, setTicketResolver] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (message.trim()) {
       onSendMessage({
         message,
-        chainOfThought,
-        webSearch,
-        yoloMode,
+        chainOfThought: ticketResolver ? true : chainOfThought,
+        webSearch: ticketResolver ? true : webSearch,
+        yoloMode: ticketResolver ? false : yoloMode,
+        ticketResolver,
       });
       setMessage("");
     }
@@ -48,8 +57,39 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
               <Button
                 type="button"
                 size="sm"
-                variant={chainOfThought ? "default" : "outline"}
-                onClick={() => setChainOfThought(!chainOfThought)}
+                variant={ticketResolver ? "default" : "outline"}
+                onClick={() => setTicketResolver(!ticketResolver)}
+              >
+                <TicketIcon className="h-4 w-4 mr-2" />
+                Ticket Resolver
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>
+                Optimized mode for resolving tickets with predefined settings:
+                <br />
+                - Chain of Thought: Enabled
+                <br />
+                - Web Search: Enabled
+                <br />
+                - YOLO Mode: Disabled
+                <br />- Best for addressing specific issues or tickets
+              </p>
+            </TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                type="button"
+                size="sm"
+                variant={
+                  chainOfThought && !ticketResolver ? "default" : "outline"
+                }
+                onClick={() =>
+                  !ticketResolver && setChainOfThought(!chainOfThought)
+                }
+                disabled={ticketResolver}
               >
                 <BrainCircuitIcon className="h-4 w-4 mr-2" />
                 Chain of Thought
@@ -57,13 +97,9 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
             </TooltipTrigger>
             <TooltipContent>
               <p>
-                Instruct the model to think through the problem step by step,
-                reasoning about the problem first before any action or response.
-                <br />
-                - More costly
-                <br />
-                - Slower
-                <br />- More accurate
+                {ticketResolver
+                  ? "This option is preset to enabled in Ticket Resolver mode."
+                  : "Instruct the model to think through the problem step by step, reasoning about the problem first before any action or response.\n- More costly\n- Slower\n- More accurate"}
               </p>
             </TooltipContent>
           </Tooltip>
@@ -73,8 +109,9 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
               <Button
                 type="button"
                 size="sm"
-                variant={webSearch ? "default" : "outline"}
-                onClick={() => setWebSearch(!webSearch)}
+                variant={webSearch && !ticketResolver ? "default" : "outline"}
+                onClick={() => !ticketResolver && setWebSearch(!webSearch)}
+                disabled={ticketResolver}
               >
                 <SearchIcon className="h-4 w-4 mr-2" />
                 Web Search
@@ -82,15 +119,9 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
             </TooltipTrigger>
             <TooltipContent>
               <p>
-                Instruct the model to search the web for relevant information.
-                <br />
-                - Slower
-                <br />
-                - Supports fetching update-to-date information
-                <br />
-                - Retrieves information from the web that might not be available
-                on the codebase.
-                <br />- Useful for addressing bugs.
+                {ticketResolver
+                  ? "This option is preset to enabled in Ticket Resolver mode."
+                  : "Instruct the model to search the web for relevant information.\n- Slower\n- Supports fetching update-to-date information\n- Retrieves information from the web that might not be available on the codebase.\n- Useful for addressing bugs."}
               </p>
             </TooltipContent>
           </Tooltip>
@@ -100,8 +131,9 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
               <Button
                 type="button"
                 size="sm"
-                variant={yoloMode ? "default" : "outline"}
-                onClick={() => setYoloMode(!yoloMode)}
+                variant={yoloMode && !ticketResolver ? "default" : "outline"}
+                onClick={() => !ticketResolver && setYoloMode(!yoloMode)}
+                disabled={ticketResolver}
               >
                 <ZapIcon className="h-4 w-4 mr-2" />
                 YOLO Mode
@@ -109,10 +141,9 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
             </TooltipTrigger>
             <TooltipContent>
               <p>
-                Allow the model to perform actions and changes on behalf of the
-                user.
-                <br />- <strong>Use with caution</strong>
-                <br />- Can lead to unintended consequences.
+                {ticketResolver
+                  ? "This option is preset to disabled in Ticket Resolver mode."
+                  : "Allow the model to perform actions and changes on behalf of the user.\n- Use with caution\n- Can lead to unintended consequences."}
               </p>
             </TooltipContent>
           </Tooltip>

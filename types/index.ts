@@ -26,12 +26,25 @@ export interface Project {
   syncState: number;
 }
 
+export enum ChatReferenceType {
+  FILE = "FILE",
+  PROJECT = "PROJECT",
+  AGENT = "AGENT",
+  WEB = "WEB",
+}
+
+export interface ChatReference {
+  referenceType: ChatReferenceType;
+  referenceTarget: any;
+}
+
 export interface UserChatMessage {
   message: string;
-  references?: Array<string>;
+  references?: Array<ChatReference>;
   chainOfThought: boolean;
   webSearch: boolean;
   yoloMode: boolean;
+  ticketResolver: boolean;
 }
 
 export interface RelatedFile {
