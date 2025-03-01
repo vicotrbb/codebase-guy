@@ -1,5 +1,6 @@
 import { generateEmbedding } from "@/lib/embedding";
-import { queryLlm } from "@/lib/llm";
+import { generateContent } from "@/lib/llm";
+import { getSettings } from "@/lib/settings";
 import { ProjectStatus } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
 
@@ -8,6 +9,8 @@ export async function POST(
   { params }: { params: { agentId: string } }
 ) {
   try {
+    const settings = await getSettings();
+
     const { agentId } = params;
     const {
       projectName,
@@ -32,10 +35,11 @@ export async function POST(
     });
 
     const prompt = `Generate a short (maximum 100 words), flat text without formatting, but meaningful and concise description for the following code chunk:\n${chunkText}`;
-    const { modelResponse: description } = (await queryLlm(
+    const description = await generateContent({
       prompt,
-      "llama3.2:3b"
-    )) ?? { modelResponse: null };
+      model: settings.weakModel,
+    });
+
     const code = `
     /**
      * ${description ?? "No description provided"}

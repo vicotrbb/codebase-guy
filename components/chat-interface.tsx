@@ -39,7 +39,7 @@ export function ChatInterface() {
     message: string;
     chainOfThought: boolean;
     webSearch: boolean;
-    yoloMode: boolean;
+    agenticMode: boolean;
   }) => {
     setMessages((prevMessages) => [
       ...prevMessages,

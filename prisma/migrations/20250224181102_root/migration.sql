@@ -24,7 +24,6 @@ CREATE TABLE "agent" (
     "last_heart_beat_at" TIMESTAMP(3) NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
-
     CONSTRAINT "agent_pkey" PRIMARY KEY ("id")
 );
 
@@ -36,7 +35,6 @@ CREATE TABLE "project" (
     "sync_state" INTEGER NOT NULL DEFAULT 0,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
-
     CONSTRAINT "project_pkey" PRIMARY KEY ("id")
 );
 
@@ -56,7 +54,6 @@ CREATE TABLE "code_embedding" (
     "embedding" vector,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
-
     CONSTRAINT "code_embedding_pkey" PRIMARY KEY ("id")
 );
 
@@ -80,10 +77,9 @@ CREATE TABLE "settings" (
     "web_search_provider" "web_search_provider" NOT NULL DEFAULT 'SERPER',
     "serper_url" TEXT,
     "serper_api_key" TEXT,
-    "allow_yolo_mode" BOOLEAN NOT NULL DEFAULT false,
+    "allow_agentic_mode" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
-
     CONSTRAINT "settings_pkey" PRIMARY KEY ("id")
 );
 

@@ -111,7 +111,7 @@ model settings {
   serperUrl String? @map("serper_url")
   serperApiKey String? @map("serper_api_key")
 
-  allowYoloMode Boolean @map("allow_yolo_mode") @default(false)
+  allowAgenticMode Boolean @map("allow_agentic_mode") @default(false)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

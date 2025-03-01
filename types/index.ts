@@ -43,7 +43,7 @@ export interface UserChatMessage {
   references?: Array<ChatReference>;
   chainOfThought: boolean;
   webSearch: boolean;
-  yoloMode: boolean;
+  agenticMode: boolean;
   ticketResolver: boolean;
 }
 
@@ -62,6 +62,12 @@ export interface RelatedProject {
 export interface SystemChatMessage {
   message: string;
   relatedProjects: RelatedProject[];
+}
+
+export enum ModelType {
+  STRONG = "STRONG",
+  WEAK = "WEAK",
+  REASONING = "REASONING",
 }
 
 export interface PublicSettings {
@@ -86,6 +92,30 @@ export interface Settings extends PublicSettings {
   redisPort: string | null;
   serperUrl: string | null;
   serperApiKey: string | null;
+}
+
+export interface GenerationRequestParams {
+  prompt: string;
+  model?: string;
+  temperature?: number;
+  max_tokens?: number;
+}
+
+export interface ChatMessage {
+  role: "system" | "user" | "assistant" | "function";
+  content: string;
+  name?: string;
+}
+
+export interface LLMRequestParams {
+  model?: string;
+  messages: ChatMessage[];
+  temperature?: number;
+  max_tokens?: number;
+  top_p?: number;
+  frequency_penalty?: number;
+  presence_penalty?: number;
+  stream?: boolean;
 }
 
 export {};

@@ -52,7 +52,7 @@ const settingsFormSchema = z.object({
   webSearchProvider: z.nativeEnum(WebSearchProvider),
   serperUrl: z.string().url("Must be a valid URL").nullable(),
   serperApiKey: z.string().nullable(),
-  allowYoloMode: z.boolean(),
+  allowAgenticMode: z.boolean(),
 });
 
 type SettingsFormValues = z.infer<typeof settingsFormSchema>;
@@ -586,27 +586,27 @@ export function SettingsConfiguration({
         </div>
 
         <div>
-          <h3 className="text-lg font-medium">Yolo mode</h3>
+          <h3 className="text-lg font-medium">Agentic mode</h3>
           <div className="space-y-4">
             <FormField
               control={form.control}
-              name="allowYoloMode"
+              name="allowAgenticMode"
               render={({ field }) => (
                 <>
                   <div className="mb-4 rounded-lg bg-red-100 p-4 text-red-900 dark:bg-red-900/30 dark:text-red-200">
-                    <strong>Warning:</strong> Enabling YOLO mode allows
+                    <strong>Warning:</strong> Enabling Agentic mode allows
                     autonomous code modifications and actions. Use with caution
                     as this could lead to unintended changes in your codebase.
                   </div>
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
                     <div className="space-y-0.5">
                       <FormLabel className="text-base">
-                        Allow Yolo mode
+                        Allow Agentic mode
                       </FormLabel>
                       <FormDescription>
-                        Allow yolo mode to be enabled during prompts. Yolo mode
-                        will allow codebase guy to perform changes on behalf of
-                        the user, including take actions.
+                        Allow agentic mode to be enabled during prompts. Agentic
+                        mode will allow codebase guy to perform changes on
+                        behalf of the user, including take actions.
                       </FormDescription>
                     </div>
                     <FormControl>

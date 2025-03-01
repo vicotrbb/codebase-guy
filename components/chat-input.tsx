@@ -39,7 +39,7 @@ interface ChatInputProps {
     message: string;
     chainOfThought: boolean;
     webSearch: boolean;
-    yoloMode: boolean;
+    agenticMode: boolean;
     ticketResolver: boolean;
     references?: ChatReference[];
   }) => void;
@@ -49,7 +49,7 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
   const [message, setMessage] = useState("");
   const [chainOfThought, setChainOfThought] = useState(false);
   const [webSearch, setWebSearch] = useState(false);
-  const [yoloMode, setYoloMode] = useState(false);
+  const [agenticMode, setAgenticMode] = useState(false);
   const [ticketResolver, setTicketResolver] = useState(false);
 
   // Reference related states
@@ -370,8 +370,8 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
       onSendMessage({
         message,
         chainOfThought: ticketResolver ? true : chainOfThought,
-        webSearch: ticketResolver ? true : webSearch,
-        yoloMode: ticketResolver ? false : yoloMode,
+        webSearch: ticketResolver ? false : webSearch,
+        agenticMode: ticketResolver ? true : agenticMode,
         ticketResolver,
         references: references.length > 0 ? references : undefined,
       });
@@ -402,9 +402,9 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
                 <br />
                 - Chain of Thought: Enabled
                 <br />
-                - Web Search: Enabled
+                - Web Search: Disabled
                 <br />
-                - YOLO Mode: Disabled
+                - Agentic Mode: Enabled
                 <br />- Best for addressing specific issues or tickets
               </p>
             </TooltipContent>
@@ -463,18 +463,18 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
               <Button
                 type="button"
                 size="sm"
-                variant={yoloMode && !ticketResolver ? "default" : "outline"}
-                onClick={() => !ticketResolver && setYoloMode(!yoloMode)}
+                variant={agenticMode && !ticketResolver ? "default" : "outline"}
+                onClick={() => !ticketResolver && setAgenticMode(!agenticMode)}
                 disabled={ticketResolver}
               >
                 <ZapIcon className="h-4 w-4 mr-2" />
-                YOLO Mode
+                Agentic Mode
               </Button>
             </TooltipTrigger>
             <TooltipContent>
               <p>
                 {ticketResolver
-                  ? "This option is preset to disabled in Ticket Resolver mode."
+                  ? "This option is preset to enabled in Ticket Resolver mode."
                   : "Allow the model to perform actions and changes on behalf of the user.\n- Use with caution\n- Can lead to unintended consequences."}
               </p>
             </TooltipContent>

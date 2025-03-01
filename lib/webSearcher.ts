@@ -3,7 +3,7 @@ import { getSettings } from "./settings";
 
 export async function searchWeb({
   query,
-  limit = 20,
+  limit = 5,
 }: {
   query: string;
   limit: number;
@@ -45,3 +45,8 @@ export async function searchWeb({
     throw new Error("Web search provider is not configured.");
   }
 }
+
+export const getWebSearchResults = async (query: string, limit: number = 5) => {
+  const results = await searchWeb({ query, limit });
+  return results;
+};

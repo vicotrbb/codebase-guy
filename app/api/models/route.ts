@@ -1,6 +1,7 @@
 import { getSettings } from "@/lib/settings";
 import { ModelProvider } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import OpenAI from "openai";
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,21 +11,29 @@ export async function GET(request: NextRequest) {
     const overrideUrl = searchParams.get("overrideUrl");
 
     if (provider === ModelProvider.OPENAI) {
-      return NextResponse.json(
-        {
-          models: [
-            {
-              id: "gpt-4o",
-              name: "GPT-4o",
-            },
-            {
-              id: "gpt-4o-mini",
-              name: "GPT-4o Mini",
-            },
-          ],
-        },
-        { status: 200 }
-      );
+      if (!settings || !settings.modelApiKey) {
+        return NextResponse.json(
+          { error: "OpenAI API key not configured" },
+          { status: 400 }
+        );
+      }
+
+      const openai = new OpenAI({
+        apiKey: settings.modelApiKey,
+        baseURL:
+          overrideUrl ??
+          settings.openApiCompatibleApiUrl ??
+          process.env["OPENAI_BASE_URL"],
+      });
+
+      const response = await openai.models.list();
+
+      const models = response.data.map((model) => ({
+        id: model.id,
+        name: model.id.split(":")[0],
+      }));
+
+      return NextResponse.json({ models }, { status: 200 });
     } else if (provider === ModelProvider.OLLAMA) {
       const response = await fetch(
         `${overrideUrl ?? settings.ollamaUrl}/api/tags`
