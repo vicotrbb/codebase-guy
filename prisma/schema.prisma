@@ -1,6 +1,6 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"] 
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
@@ -18,10 +18,10 @@ enum AgentStatus {
 }
 
 model agent {
-  id String @id @map("id")
-  projectName String @map("project_name")
-  status AgentStatus @map("status") @default(STARTING)
-  lastHeartBeatAt DateTime @map("last_heart_beat_at")
+  id              String      @id @map("id")
+  projectName     String      @map("project_name")
+  status          AgentStatus @default(STARTING) @map("status")
+  lastHeartBeatAt DateTime    @map("last_heart_beat_at")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -36,10 +36,10 @@ enum ProjectStatus {
 }
 
 model project {
-  id String @id @default(uuid()) @map("id")
-  name String @map("name")
-  status ProjectStatus @map("status") @default(SYNCING)
-  syncState Int @map("sync_state") @default(0)
+  id        String        @id @default(uuid()) @map("id")
+  name      String        @map("name")
+  status    ProjectStatus @default(SYNCING) @map("status")
+  syncState Int           @default(0) @map("sync_state")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -48,18 +48,18 @@ model project {
 }
 
 model codeEmbedding {
-  id          String      @id @default(uuid()) @map("id")
-  projectName String @map("project_name")
-  fileName    String @map("file_name")
-  filePath    String @map("file_path")
-  absolutePath String @map("absolute_path")
-  chunkText   String @map("chunk_text")
-  chunkStart  Int @map("chunk_start")
-  chunkEnd    Int @map("chunk_end")
-  chunkStartLine Int @map("chunk_start_line")
-  chunkEndLine Int @map("chunk_end_line")
-  description String? @map("description")
-  embedding   Unsupported("vector")? @map("embedding")
+  id             String                 @id @default(uuid()) @map("id")
+  projectName    String                 @map("project_name")
+  fileName       String                 @map("file_name")
+  filePath       String                 @map("file_path")
+  absolutePath   String                 @map("absolute_path")
+  chunkText      String                 @map("chunk_text")
+  chunkStart     Int                    @map("chunk_start")
+  chunkEnd       Int                    @map("chunk_end")
+  chunkStartLine Int                    @map("chunk_start_line")
+  chunkEndLine   Int                    @map("chunk_end_line")
+  description    String?                @map("description")
+  embedding      Unsupported("vector")? @map("embedding")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -87,34 +87,68 @@ enum CacheProvider {
 }
 
 model settings {
-  id String @id @default(uuid()) @map("id")
-  guyName String @map("guy_name") @default("Codebase Guy") @unique
+  id      String @id @default(uuid()) @map("id")
+  guyName String @unique @default("Codebase Guy") @map("guy_name")
 
-  embeddingServiceUrl String @map("embedding_service_url") @default("http://localhost:5050")
+  embeddingServiceUrl String @default("http://localhost:5050") @map("embedding_service_url")
 
-  modelProvider ModelProvider @map("model_provider") @default(OLLAMA)
-  ollamaUrl String @map("ollama_url") @default("http://localhost:11434")
-  openApiCompatibleApiUrl String? @map("open_api_compatible_api_url")
-  modelApiKey String? @map("model_api_key")
+  modelProvider           ModelProvider @default(OLLAMA) @map("model_provider")
+  ollamaUrl               String        @default("http://localhost:11434") @map("ollama_url")
+  openApiCompatibleApiUrl String?       @map("open_api_compatible_api_url")
+  modelApiKey             String?       @map("model_api_key")
 
-  weakModel String @map("weak_model") @default("llama3.2:3b")
-  strongModel String @map("strong_model") @default("llama3:latest")
-  reasoningModel String @map("reasoning_model") @default("llama3:latest")
+  weakModel      String @default("llama3.2:3b") @map("weak_model")
+  strongModel    String @default("llama3:latest") @map("strong_model")
+  reasoningModel String @default("llama3:latest") @map("reasoning_model")
 
-  cacheEnabled Boolean @map("cache_enabled") @default(false)
-  cacheProvider CacheProvider @map("cache_provider") @default(REDIS)
-  redisHost String? @map("redis_host")
-  redisPort String? @map("redis_port")
+  cacheEnabled  Boolean       @default(false) @map("cache_enabled")
+  cacheProvider CacheProvider @default(REDIS) @map("cache_provider")
+  redisHost     String?       @map("redis_host")
+  redisPort     String?       @map("redis_port")
 
-  webSearchEnabled Boolean @map("web_search_enabled") @default(false)
-  webSearchProvider WebSearchProvider @map("web_search_provider") @default(SERPER)
-  serperUrl String? @map("serper_url")
-  serperApiKey String? @map("serper_api_key")
+  webSearchEnabled  Boolean           @default(false) @map("web_search_enabled")
+  webSearchProvider WebSearchProvider @default(SERPER) @map("web_search_provider")
+  serperUrl         String?           @map("serper_url")
+  serperApiKey      String?           @map("serper_api_key")
 
-  allowAgenticMode Boolean @map("allow_agentic_mode") @default(false)
+  allowAgenticMode Boolean @default(false) @map("allow_agentic_mode")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("settings")
+}
+
+enum ChatRole {
+  user
+  assistant
+  system
+  function
+
+  @@map("chat_role")
+}
+
+model chat {
+  id   String @id @default(uuid()) @map("id")
+  name String @map("name")
+
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  chatMessage chatMessage[]
+
+  @@map("chat")
+}
+
+model chatMessage {
+  id      String   @id @default(uuid()) @map("id")
+  role    ChatRole @map("role")
+  content String   @map("content")
+
+  referenceChat   chat   @relation(fields: [referenceChatId], references: [id])
+  referenceChatId String @map("reference_chat_id")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("chat_message")
 }

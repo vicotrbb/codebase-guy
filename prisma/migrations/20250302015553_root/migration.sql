@@ -16,6 +16,9 @@ CREATE TYPE "web_search_provider" AS ENUM ('SERPER');
 -- CreateEnum
 CREATE TYPE "cache_provider" AS ENUM ('REDIS');
 
+-- CreateEnum
+CREATE TYPE "chat_role" AS ENUM ('user', 'assistant', 'system', 'function');
+
 -- CreateTable
 CREATE TABLE "agent" (
     "id" TEXT NOT NULL,
@@ -83,5 +86,31 @@ CREATE TABLE "settings" (
     CONSTRAINT "settings_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "chat" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "chat_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "chat_message" (
+    "id" TEXT NOT NULL,
+    "role" "chat_role" NOT NULL,
+    "content" TEXT NOT NULL,
+    "reference_chat_id" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "chat_message_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "settings_guy_name_key" ON "settings"("guy_name");
+
+-- AddForeignKey
+ALTER TABLE
+    "chat_message"
+ADD
+    CONSTRAINT "chat_message_reference_chat_id_fkey" FOREIGN KEY ("reference_chat_id") REFERENCES "chat"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

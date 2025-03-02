@@ -101,8 +101,10 @@ export interface GenerationRequestParams {
   max_tokens?: number;
 }
 
+export type ChatRole = "system" | "user" | "assistant" | "function";
+
 export interface ChatMessage {
-  role: "system" | "user" | "assistant" | "function";
+  role: ChatRole;
   content: string;
   name?: string;
 }
@@ -116,6 +118,12 @@ export interface LLMRequestParams {
   frequency_penalty?: number;
   presence_penalty?: number;
   stream?: boolean;
+}
+
+export interface Chat {
+  id: string;
+  name: string;
+  messages: ChatMessage[];
 }
 
 export {};
