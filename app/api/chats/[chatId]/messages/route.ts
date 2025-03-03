@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/db";
-import { generateChatCompletion } from "@/lib/llm";
+import { generateChatCompletion, generateContent } from "@/lib/llm";
 import { getSettings } from "@/lib/settings";
 import { errorMessage } from "@/lib/defaultMessages";
 import {
@@ -11,6 +11,7 @@ import { ChatRole, UserChatMessage } from "@/types";
 import { PromptBuilder } from "@/lib/prompt";
 import { searchWebByQuery } from "@/lib/webSearcher";
 import { enhanceReference } from "@/lib/references";
+import { COTPromptBuilder } from "@/lib/cot-prompt";
 
 export async function GET(
   request: NextRequest,
@@ -100,14 +101,26 @@ export async function POST(
       promptBuilder.useReferences(enhancedReferences);
     }
 
-    // Render prompt
-    const prompt = promptBuilder
-      .injectUserQuestion(message)
-      .useReferences(references)
-      .renderPrompt()
-      .getPrompt();
+    // Inject user question and references into the prompt
+    promptBuilder.injectUserQuestion(message).useReferences(references);
 
-    console.log(prompt);
+    // Generate chain of thought
+    if (chainOfThought) {
+      const cotPrompt = new COTPromptBuilder()
+        .fromPrompt(promptBuilder)
+        .render()
+        .getPrompt();
+
+      const cot = await generateContent({
+        prompt: cotPrompt,
+        model: settings.reasoningModel,
+      });
+
+      promptBuilder.useCOT(cot);
+    }
+
+    // Renders the prompt and returns it
+    const prompt = promptBuilder.render().getPrompt();
 
     // Convert chat messages to input messages
     // This allow us to use the chat history in the prompt

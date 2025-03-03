@@ -2,29 +2,30 @@ import { ChatReference, ChatReferenceType, WebSearchResult } from "@/types";
 import { CodeChunkQueryResult } from "./embedding";
 
 export class PromptBuilder {
-  private readonly compressPrompt: boolean;
-  private readonly role: string;
-  private readonly goal: string;
-  private instructions: string[];
-  private constraints: string[];
-  private context: string;
-  private userQuestion: string;
-  private prompt: string;
+  protected readonly compressPrompt: boolean;
+  protected readonly role: string;
+  protected readonly goal: string;
+  protected instructions: string[];
+  protected constraints: string[];
+  protected context: string;
+  protected userQuestion: string;
+  protected prompt: string;
 
-  private cot: string; // Chain of thought
-  private references?: ChatReference[]; // References
-  private webSearch?: WebSearchResult[]; // Web search
+  protected cot: string; // Chain of thought
+  protected references?: ChatReference[]; // References
+  protected webSearch?: WebSearchResult[]; // Web search
 
-  private isRendered: boolean;
+  protected isRendered: boolean;
 
-  constructor(compressPrompt: boolean = false) {
+  constructor(compressPrompt: boolean = false, role?: string, goal?: string) {
     this.compressPrompt = compressPrompt;
 
     // Base role
-    this.role = "You are an expert software engineer.";
+    this.role = role ?? "You are an expert software engineer.";
 
     // Base goal
     this.goal =
+      goal ??
       "Your goal is to respond to the user's question based on the provided context. Remember that your main goal is to help the user understand the codebase, suggest changes, provide general advice and help them with their questions.";
 
     // Base instructions
@@ -33,6 +34,8 @@ export class PromptBuilder {
       "Your response must be in markdown format.",
       "The context provided is a list of code chunks that are related to the user's question, the description of each code chunk and the start and end lines of the code chunk.",
       "The context is extracted using RAG (Retrieval-Augmented Generation) technique.",
+      "Always try to reference the code chunks in your response. When applicable.",
+      "You can suggest modifications to the code chunks in your response. When applicable.",
     ];
 
     // Base constraints
@@ -167,7 +170,7 @@ export class PromptBuilder {
     return this;
   }
 
-  public renderPrompt(): this {
+  public render(): this {
     this.prompt = `
       ${this.cot ? `<think>\n${this.cot}\n</think>` : ""}
 
@@ -180,11 +183,11 @@ export class PromptBuilder {
       </goal>
 
       <instructions>
-      ${this.instructions.join("\n- ")}
+      ${this.instructions.map((instruction) => `- ${instruction}`).join("\n")}
       </instructions>
 
       <constraints>
-      ${this.constraints.join("\n- ")}
+      ${this.constraints.map((constraint) => `- ${constraint}`).join("\n")}
       </constraints>
 
       ${
@@ -208,7 +211,7 @@ export class PromptBuilder {
 
   public getPrompt(): string {
     if (!this.isRendered) {
-      this.renderPrompt();
+      this.render();
     }
 
     return this.prompt;
@@ -220,6 +223,14 @@ export class PromptBuilder {
 
   get getCot(): string {
     return this.cot;
+  }
+
+  get getContext(): string {
+    return this.context;
+  }
+
+  get getUserQuestion(): string {
+    return this.userQuestion;
   }
 
   get getReferences(): ChatReference[] | null {

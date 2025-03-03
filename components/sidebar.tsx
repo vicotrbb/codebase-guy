@@ -50,142 +50,158 @@ export function Sidebar({
     setModalState({ isOpen: false, content: null, title: "" });
   };
 
+  const hasContent = selectedMessage || hoveredProjects?.length;
+
   return (
-    <aside className="w-80 bg-gray-50 border-r border-gray-200 flex flex-col h-full transition-[width] duration-200 ease-in-out">
-      <div className="p-6 border-b border-gray-200 bg-white">
+    <aside className="w-80 bg-white border-l border-gray-200 flex flex-col h-full transition-all duration-200 ease-in-out shadow-lg">
+      <div className="p-4 border-b border-gray-200 bg-white sticky top-0 z-10">
         <h2 className="text-lg font-semibold text-gray-800 flex items-center">
-          <GitGraphIcon className="mr-2 h-5 w-5 text-blue-500" />
-          Related Context
+          <GitGraphIcon className="mr-2 h-5 w-5 text-blue-600" />
+          Message Context
         </h2>
       </div>
-      <ScrollArea className="flex-1">
-        <div className="p-3 space-y-4">
-          {/* Projects Section */}
-          {hoveredProjects && hoveredProjects.length > 0 && (
-            <Section
-              title="Related Projects"
-              icon={<Folder className="h-5 w-5 text-blue-500" />}
-            >
-              {hoveredProjects.map((project) => (
-                <div
-                  key={project.id}
-                  className="mb-6 bg-white rounded-lg shadow-sm p-4"
-                >
-                  <h3 className="text-md font-medium text-gray-900 mb-3 flex items-center">
-                    <Folder className="mr-2 h-4 w-4 text-blue-500" />
-                    {project.name}
-                  </h3>
-                  <FileList files={project.relatedFiles} />
-                </div>
-              ))}
-            </Section>
-          )}
 
-          {/* Prompt Section */}
-          {selectedMessage?.prompt && (
-            <Section
-              title="Prompt"
-              icon={<Lightbulb className="h-5 w-5 text-yellow-500" />}
-              onClick={() => openModal(selectedMessage.prompt!, "Prompt")}
-            >
-              <div className="p-3 bg-white rounded-lg cursor-pointer hover:bg-gray-50">
-                <p className="text-sm text-gray-600 line-clamp-3">
-                  {selectedMessage.prompt}
-                </p>
-                <p className="text-xs text-blue-500 mt-1">
-                  Click to view full prompt
-                </p>
-              </div>
-            </Section>
-          )}
-
-          {/* Chain of Thought Section */}
-          {selectedMessage?.chainOfThought && (
-            <Section
-              title="Chain of Thought"
-              icon={<Brain className="h-5 w-5 text-purple-500" />}
-              onClick={() =>
-                openModal(selectedMessage.chainOfThought!, "Chain of Thought")
-              }
-            >
-              <div className="p-3 bg-white rounded-lg cursor-pointer hover:bg-gray-50">
-                <p className="text-sm text-gray-600 line-clamp-3">
-                  {selectedMessage.chainOfThought}
-                </p>
-                <p className="text-xs text-blue-500 mt-1">
-                  Click to view full reasoning
-                </p>
-              </div>
-            </Section>
-          )}
-
-          {/* Web Search Results Section */}
-          {selectedMessage?.webSearch &&
-            selectedMessage.webSearch.length > 0 && (
-              <Section
-                title="Web Search Results"
-                icon={<Search className="h-5 w-5 text-green-500" />}
-              >
-                {selectedMessage.webSearch.map((result, index) => (
-                  <div
-                    key={index}
-                    className="p-3 bg-white rounded-lg mb-2 cursor-pointer hover:bg-gray-50"
-                    onClick={() =>
-                      openModal(JSON.stringify(result, null, 2), result.title)
-                    }
-                  >
-                    <h4 className="text-sm font-medium text-gray-900 line-clamp-1">
-                      {result.title}
-                    </h4>
-                    <p className="text-xs text-gray-500 line-clamp-2">
-                      {result.content}
-                    </p>
-                  </div>
-                ))}
-              </Section>
-            )}
-
-          {/* References Section */}
-          {selectedMessage?.references &&
-            selectedMessage.references.length > 0 && (
-              <Section
-                title="References"
-                icon={<Link className="h-5 w-5 text-indigo-500" />}
-              >
-                {selectedMessage.references.map((reference, index) => (
-                  <div
-                    key={index}
-                    className="p-3 bg-white rounded-lg mb-2 cursor-pointer hover:bg-gray-50"
-                    onClick={() =>
-                      openModal(
-                        JSON.stringify(reference, null, 2),
-                        `Reference - ${reference.referenceType}`
-                      )
-                    }
-                  >
-                    <h4 className="text-sm font-medium text-gray-900">
-                      {reference.referenceType}
-                    </h4>
-                    {reference.referenceContent && (
-                      <p className="text-xs text-gray-500 line-clamp-2">
-                        {reference.referenceContent}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </Section>
-            )}
-
-          {/* Empty State */}
-          {!selectedMessage && !hoveredProjects && (
-            <div className="text-center p-4 bg-white rounded-lg shadow-sm">
-              <Info className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-              <p className="text-sm text-gray-600">
+      <ScrollArea className="flex-1 px-4">
+        <div className="py-4 space-y-6">
+          {!hasContent ? (
+            <div className="text-center p-6 bg-gray-50 rounded-xl">
+              <Info className="mx-auto h-8 w-8 text-gray-400 mb-3" />
+              <p className="text-sm text-gray-600 font-medium">
                 {isStuck
-                  ? "Click the selected message to unpin related files."
-                  : "Hover over or click a message to see related files."}
+                  ? "Click the selected message to unpin context"
+                  : "Hover over a message to see its context"}
               </p>
             </div>
+          ) : (
+            <>
+              {/* Projects Section */}
+              {hoveredProjects && hoveredProjects.length > 0 && (
+                <Section
+                  title="Related Projects"
+                  icon={<Folder className="h-5 w-5 text-blue-600" />}
+                >
+                  <div className="space-y-3">
+                    {hoveredProjects.map((project) => (
+                      <div
+                        key={project.id}
+                        className="bg-gray-50 rounded-lg p-3 transition-all hover:bg-gray-100"
+                      >
+                        <h3 className="text-sm font-medium text-gray-900 mb-2 flex items-center">
+                          <Folder className="mr-2 h-4 w-4 text-blue-600" />
+                          {project.name}
+                        </h3>
+                        <FileList files={project.relatedFiles} />
+                      </div>
+                    ))}
+                  </div>
+                </Section>
+              )}
+
+              {/* Prompt Section */}
+              {selectedMessage?.prompt && (
+                <Section
+                  title="Prompt"
+                  icon={<Lightbulb className="h-5 w-5 text-amber-600" />}
+                  onClick={() => openModal(selectedMessage.prompt!, "Prompt")}
+                >
+                  <div className="bg-gray-50 rounded-lg p-3 cursor-pointer transition-all hover:bg-gray-100">
+                    <p className="text-sm text-gray-700 line-clamp-3">
+                      {selectedMessage.prompt}
+                    </p>
+                    <p className="text-xs text-blue-600 mt-2 font-medium">
+                      Click to view full prompt →
+                    </p>
+                  </div>
+                </Section>
+              )}
+
+              {/* Chain of Thought Section */}
+              {selectedMessage?.chainOfThought && (
+                <Section
+                  title="Chain of Thought"
+                  icon={<Brain className="h-5 w-5 text-purple-600" />}
+                  onClick={() =>
+                    openModal(
+                      selectedMessage.chainOfThought!,
+                      "Chain of Thought"
+                    )
+                  }
+                >
+                  <div className="bg-gray-50 rounded-lg p-3 cursor-pointer transition-all hover:bg-gray-100">
+                    <p className="text-sm text-gray-700 line-clamp-3">
+                      {selectedMessage.chainOfThought}
+                    </p>
+                    <p className="text-xs text-blue-600 mt-2 font-medium">
+                      Click to view full reasoning →
+                    </p>
+                  </div>
+                </Section>
+              )}
+
+              {/* Web Search Results Section */}
+              {selectedMessage?.webSearch &&
+                selectedMessage.webSearch.length > 0 && (
+                  <Section
+                    title="Web Search Results"
+                    icon={<Search className="h-5 w-5 text-green-600" />}
+                  >
+                    <div className="space-y-2">
+                      {selectedMessage.webSearch.map((result, index) => (
+                        <div
+                          key={index}
+                          className="bg-gray-50 rounded-lg p-3 cursor-pointer transition-all hover:bg-gray-100"
+                          onClick={() =>
+                            openModal(
+                              JSON.stringify(result, null, 2),
+                              result.title
+                            )
+                          }
+                        >
+                          <h4 className="text-sm font-medium text-gray-900 line-clamp-1 mb-1">
+                            {result.title}
+                          </h4>
+                          <p className="text-xs text-gray-600 line-clamp-2">
+                            {result.content}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </Section>
+                )}
+
+              {/* References Section */}
+              {selectedMessage?.references &&
+                selectedMessage.references.length > 0 && (
+                  <Section
+                    title="References"
+                    icon={<Link className="h-5 w-5 text-indigo-600" />}
+                  >
+                    <div className="space-y-2">
+                      {selectedMessage.references.map((reference, index) => (
+                        <div
+                          key={index}
+                          className="bg-gray-50 rounded-lg p-3 cursor-pointer transition-all hover:bg-gray-100"
+                          onClick={() =>
+                            openModal(
+                              JSON.stringify(reference, null, 2),
+                              `Reference - ${reference.referenceType}`
+                            )
+                          }
+                        >
+                          <h4 className="text-sm font-medium text-gray-900 mb-1">
+                            {reference.referenceType}
+                          </h4>
+                          {reference.referenceContent && (
+                            <p className="text-xs text-gray-600 line-clamp-2">
+                              {reference.referenceContent}
+                            </p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </Section>
+                )}
+            </>
           )}
         </div>
       </ScrollArea>
@@ -195,7 +211,7 @@ export function Sidebar({
         onClose={closeModal}
         title={modalState.title}
       >
-        <div className="whitespace-pre-wrap font-mono text-sm">
+        <div className="whitespace-pre-wrap font-mono text-sm p-4 bg-gray-50 rounded-lg">
           {modalState.content}
         </div>
       </Modal>
@@ -212,11 +228,8 @@ interface SectionProps {
 
 function Section({ title, icon, children, onClick }: SectionProps) {
   return (
-    <div
-      className={`mb-6 ${onClick ? "cursor-pointer" : ""}`}
-      onClick={onClick}
-    >
-      <h2 className="text-lg font-semibold text-gray-800 flex items-center mb-3">
+    <div className={onClick ? "cursor-pointer group" : ""} onClick={onClick}>
+      <h2 className="text-sm font-semibold text-gray-900 flex items-center mb-3">
         {icon}
         <span className="ml-2">{title}</span>
       </h2>
