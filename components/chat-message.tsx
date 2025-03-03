@@ -1,43 +1,36 @@
-"use client"
+"use client";
 
-import ReactMarkdown from "react-markdown"
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism"
-
-interface File {
-  name: string
-  path: string
-  absolutePath: string
-}
-
-interface Project {
-  id: number
-  name: string
-  relatedFiles?: File[]
-}
+import ReactMarkdown from "react-markdown";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { Project, File } from "@/types";
 
 interface ChatMessageProps {
-  id: string
-  role: "user" | "assistant"
-  content: string
-  relatedProjects?: Project[]
-  onHover: (projects: Project[] | null) => void
-  onClick: (messageId: string) => void
-  isSelected: boolean
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  relatedProjects?: Project[];
+  onHover: (projects: Project[] | null) => void;
+  onClick: (id: string) => void;
+  isSelected: boolean;
 }
 
-export function ChatMessage({ id, role, content, relatedProjects, onHover, onClick, isSelected }: ChatMessageProps) {
+export function ChatMessage({
+  id,
+  role,
+  content,
+  relatedProjects,
+  onHover,
+  onClick,
+  isSelected,
+}: ChatMessageProps) {
   return (
     <div
-      className={`p-4 rounded-lg cursor-pointer transition-colors ${
-        role === "user"
-          ? "bg-blue-50 border border-blue-100"
-          : isSelected
-            ? "bg-gray-100 border border-gray-200"
-            : "bg-white border border-gray-100"
-      }`}
-      onMouseEnter={() => relatedProjects && onHover(relatedProjects)}
-      onMouseLeave={() => !isSelected && onHover(null)}
+      className={`p-4 rounded-lg ${
+        role === "assistant" ? "bg-white" : "bg-blue-50"
+      } ${isSelected ? "ring-2 ring-blue-500" : ""}`}
+      onMouseEnter={() => onHover(relatedProjects || null)}
+      onMouseLeave={() => onHover(null)}
       onClick={() => onClick(id)}
     >
       {role === "user" ? (
@@ -47,7 +40,7 @@ export function ChatMessage({ id, role, content, relatedProjects, onHover, onCli
           className="text-sm text-gray-800 prose max-w-none"
           components={{
             code({ node, inline, className, children, ...props }) {
-              const match = /language-(\w+)/.exec(className || "")
+              const match = /language-(\w+)/.exec(className || "");
               return !inline && match ? (
                 <div className="relative rounded-lg overflow-hidden my-4">
                   <div className="absolute top-0 right-0 px-4 py-1 text-xs font-medium text-gray-400 bg-gray-800/50 rounded-bl">
@@ -69,18 +62,43 @@ export function ChatMessage({ id, role, content, relatedProjects, onHover, onCli
                   </SyntaxHighlighter>
                 </div>
               ) : (
-                <code className="px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-800 text-sm" {...props}>
+                <code
+                  className="px-1.5 py-0.5 rounded-md bg-gray-100 text-gray-800 text-sm"
+                  {...props}
+                >
                   {children}
                 </code>
-              )
+              );
             },
             // Improve other markdown elements
-            h1: ({ children }) => <h1 className="text-xl font-bold text-gray-900 mb-4 mt-6">{children}</h1>,
-            h2: ({ children }) => <h2 className="text-lg font-semibold text-gray-800 mb-3 mt-5">{children}</h2>,
-            h3: ({ children }) => <h3 className="text-base font-medium text-gray-800 mb-2 mt-4">{children}</h3>,
-            p: ({ children }) => <p className="text-gray-700 mb-4 leading-relaxed">{children}</p>,
-            ul: ({ children }) => <ul className="list-disc list-inside mb-4 text-gray-700 space-y-1">{children}</ul>,
-            ol: ({ children }) => <ol className="list-decimal list-inside mb-4 text-gray-700 space-y-1">{children}</ol>,
+            h1: ({ children }) => (
+              <h1 className="text-xl font-bold text-gray-900 mb-4 mt-6">
+                {children}
+              </h1>
+            ),
+            h2: ({ children }) => (
+              <h2 className="text-lg font-semibold text-gray-800 mb-3 mt-5">
+                {children}
+              </h2>
+            ),
+            h3: ({ children }) => (
+              <h3 className="text-base font-medium text-gray-800 mb-2 mt-4">
+                {children}
+              </h3>
+            ),
+            p: ({ children }) => (
+              <p className="text-gray-700 mb-4 leading-relaxed">{children}</p>
+            ),
+            ul: ({ children }) => (
+              <ul className="list-disc list-inside mb-4 text-gray-700 space-y-1">
+                {children}
+              </ul>
+            ),
+            ol: ({ children }) => (
+              <ol className="list-decimal list-inside mb-4 text-gray-700 space-y-1">
+                {children}
+              </ol>
+            ),
             li: ({ children }) => <li className="ml-4">{children}</li>,
           }}
         >
@@ -88,6 +106,5 @@ export function ChatMessage({ id, role, content, relatedProjects, onHover, onCli
         </ReactMarkdown>
       )}
     </div>
-  )
+  );
 }
-

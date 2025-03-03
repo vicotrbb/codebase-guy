@@ -22,6 +22,7 @@ export interface Project {
   id: string;
   name: string;
   status: ProjectStatus;
+  relatedFiles?: File[];
   updatedAt: string;
   syncState: number;
 }
@@ -58,11 +59,6 @@ export interface RelatedProject {
   id: string;
   name: string;
   relatedFiles: RelatedFile[];
-}
-
-export interface SystemChatMessage {
-  message: string;
-  relatedProjects: RelatedProject[];
 }
 
 export enum ModelType {
@@ -132,6 +128,24 @@ export interface WebSearchResult {
   title: string;
   link: string;
   content: string;
+}
+
+export interface File {
+  name: string;
+  path: string;
+  absolutePath: string;
+}
+
+export interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  relatedProjects?: Project[];
+  prompt?: string;
+  chainOfThought?: string;
+  references?: ChatReference[];
+  webSearch?: WebSearchResult[];
+  createdAt?: Date;
 }
 
 export {};

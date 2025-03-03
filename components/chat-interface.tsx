@@ -6,26 +6,7 @@ import { ChatInput } from "@/components/chat-input";
 import { Sidebar } from "@/components/sidebar";
 import { ChatList } from "@/components/chat-list";
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-interface File {
-  name: string;
-  path: string;
-  absolutePath: string;
-}
-
-interface Project {
-  id: number;
-  name: string;
-  relatedFiles?: File[];
-}
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  relatedProjects?: Project[];
-  createdAt?: Date;
-}
+import { Message, Project } from "@/types";
 
 interface Chat {
   id: string;
@@ -46,6 +27,8 @@ export function ChatInterface() {
   );
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [isNewChat, setIsNewChat] = useState(false);
+  const [hoveredMessage, setHoveredMessage] = useState<Message | null>(null);
+  const [isMessageStuck, setIsMessageStuck] = useState(false);
 
   const loadChats = async () => {
     try {
@@ -77,6 +60,10 @@ export function ChatInterface() {
             role: msg.role,
             content: msg.content,
             relatedProjects: msg.relatedProjects,
+            prompt: msg.prompt,
+            chainOfThought: msg.chainOfThought,
+            references: msg.references,
+            webSearch: msg.webSearch,
             createdAt: new Date(msg.createdAt),
           }))
         );
@@ -152,6 +139,11 @@ export function ChatInterface() {
           role: "assistant",
           content: data.assistantMessage.content,
           relatedProjects: data.relatedProjects,
+          prompt: data.assistantMessage.prompt,
+          chainOfThought: data.assistantMessage.chainOfThought,
+          references: data.assistantMessage.references,
+          webSearch: data.assistantMessage.webSearch,
+          createdAt: new Date(data.assistantMessage.createdAt),
         },
       ]);
     } catch (error) {
@@ -170,19 +162,22 @@ export function ChatInterface() {
   };
 
   const handleMessageClick = (messageId: string) => {
+    const clickedMessage = messages.find((m) => m.id === messageId);
+
     if (selectedMessageId === messageId) {
       setSelectedMessageId(null);
-      setHoveredProjects(null);
+      setHoveredMessage(null);
+      setIsMessageStuck(false);
     } else {
       setSelectedMessageId(messageId);
-      const clickedMessage = messages.find((m) => m.id === messageId);
-      setHoveredProjects(clickedMessage?.relatedProjects || null);
+      setHoveredMessage(clickedMessage || null);
+      setIsMessageStuck(true);
     }
   };
 
-  const handleMessageHover = (projects: Project[] | null) => {
-    if (!selectedMessageId) {
-      setHoveredProjects(projects);
+  const handleMessageHover = (message: Message | null) => {
+    if (!isMessageStuck) {
+      setHoveredMessage(message);
     }
   };
 
@@ -209,7 +204,9 @@ export function ChatInterface() {
                   role={message.role}
                   content={message.content}
                   relatedProjects={message.relatedProjects}
-                  onHover={handleMessageHover}
+                  onHover={(projects) =>
+                    handleMessageHover(projects ? message : null)
+                  }
                   onClick={handleMessageClick}
                   isSelected={selectedMessageId === message.id}
                 />
@@ -228,8 +225,9 @@ export function ChatInterface() {
           </div>
         </div>
         <Sidebar
-          hoveredProjects={hoveredProjects}
-          isStuck={!!selectedMessageId}
+          hoveredProjects={hoveredMessage?.relatedProjects || null}
+          selectedMessage={hoveredMessage}
+          isStuck={isMessageStuck}
         />
       </div>
     </div>

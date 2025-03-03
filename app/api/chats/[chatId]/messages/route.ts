@@ -85,7 +85,7 @@ export async function POST(
 
     // Fetch web search results
     if (webSearch && settings.webSearchEnabled) {
-      const webSearchResults = await searchWebByQuery(message, 5);
+      const webSearchResults = await searchWebByQuery(message, 3, true);
 
       if (webSearchResults && webSearchResults.length > 0) {
         promptBuilder.injectWebSearchIntoContext(webSearchResults);
@@ -146,8 +146,9 @@ export async function POST(
         userMessage,
         assistantMessage,
         relatedProjects,
-        chainOfThought,
-        webSearch,
+        chainOfThought: promptBuilder.getCot,
+        webSearch: promptBuilder.getWebSearch,
+        references: promptBuilder.getReferences,
         agenticMode,
         ticketResolver,
       },

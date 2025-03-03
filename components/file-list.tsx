@@ -1,35 +1,32 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { FileIcon } from "lucide-react"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { ProtocolModal } from "@/components/protocol-modal"
-
-interface File {
-  name: string
-  path: string
-  absolutePath: string
-}
+import { File } from "@/types";
+import { useState } from "react";
+import { FileIcon } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { ProtocolModal } from "@/components/protocol-modal";
 
 interface FileListProps {
-  files?: File[]
+  files?: File[];
 }
 
 export function FileList({ files = [] }: FileListProps) {
-  const [modalFilePath, setModalFilePath] = useState(null)
+  const [modalFilePath, setModalFilePath] = useState<string | null>(null);
 
   if (!files || files.length === 0) {
-    return <p className="text-sm text-gray-500 italic">No related files.</p>
+    return <p className="text-sm text-gray-500 italic">No related files.</p>;
   }
 
-  const handleFileClick = (absolutePath: string) => {
+  const handleFileClick = (absolutePath: string | null) => {
+    if (!absolutePath) return;
+
     try {
-      window.location.href = `file://${encodeURIComponent(absolutePath)}`
+      window.location.href = `file://${encodeURIComponent(absolutePath)}`;
     } catch (error) {
-      console.error("Failed to open file:", error)
-      setModalFilePath(absolutePath)
+      console.error("Failed to open file:", error);
+      setModalFilePath(absolutePath);
     }
-  }
+  };
 
   return (
     <>
@@ -52,8 +49,11 @@ export function FileList({ files = [] }: FileListProps) {
           ))}
         </ul>
       </ScrollArea>
-      <ProtocolModal isOpen={!!modalFilePath} filePath={modalFilePath} onClose={() => setModalFilePath(null)} />
+      <ProtocolModal
+        isOpen={!!modalFilePath}
+        filePath={modalFilePath ?? ""}
+        onClose={() => setModalFilePath(null)}
+      />
     </>
-  )
+  );
 }
-
