@@ -77,7 +77,7 @@ export async function POST(
     const promptBuilder = new PromptBuilder();
 
     // Fetch code chunks
-    const codeChunks = await getCodeChunks({ message });
+    const codeChunks = await getCodeChunks({ message, topN: 10 });
 
     if (codeChunks && codeChunks.length > 0) {
       promptBuilder.injectCodeChunksIntoContext(codeChunks);

@@ -477,7 +477,7 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
                 size="sm"
                 variant={agenticMode && !ticketResolver ? "default" : "outline"}
                 onClick={() => !ticketResolver && setAgenticMode(!agenticMode)}
-                disabled={ticketResolver || !settings.agenticModeEnabled}
+                disabled={ticketResolver || !settings.allowAgenticMode}
               >
                 <ZapIcon className="h-4 w-4 mr-2" />
                 Agentic Mode

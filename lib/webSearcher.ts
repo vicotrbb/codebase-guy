@@ -1,8 +1,10 @@
 import { WebSearchProvider } from "@prisma/client";
 import { getSettings } from "./settings";
 import { WebSearchResult } from "@/types";
+import { Readability } from "@mozilla/readability";
 import got from "got";
 import { generateContent } from "./llm";
+import { JSDOM } from "jsdom";
 
 export async function searchWeb({
   query,
@@ -53,15 +55,29 @@ export const fetchWebContent = async (
   url: string,
   summarize: boolean = false
 ): Promise<string> => {
-  const response = await got(url, { responseType: "text" });
-  const body = response.body;
+  const html = await got(url, { responseType: "text" });
+
+  const dom = new JSDOM(html.body, { url });
+  const reader = new Readability(dom.window.document);
+  const article = reader.parse();
+
+  const body = article?.textContent ?? "";
 
   if (summarize) {
     const settings = await getSettings();
 
     const summarizedContent = await generateContent({
       model: settings.weakModel,
-      prompt: `You are a helpful assistant that summarizes web content. Summarize the following content, focusing on the most important technical information:\n\n${body}`,
+      prompt: `
+      You are a helpful assistant that summarizes web content. Summarize the following content, focusing on the most important technical information:
+
+      <web-content>
+      ${body}
+      </web-content>
+
+      <summary>
+      </summary>
+      `,
     });
 
     return summarizedContent;
@@ -75,7 +91,27 @@ export const searchWebByQuery = async (
   limit: number = 5,
   summarize: boolean = false
 ): Promise<WebSearchResult[]> => {
-  const results = await searchWeb({ query, limit });
+  const settings = await getSettings();
+
+  if (!settings.webSearchEnabled) {
+    return [];
+  }
+
+  const webQuery = await generateContent({
+    model: settings.weakModel,
+    prompt: `
+    You are a helpful assistant that generates a web query based on a user's question. The query should be a single sentence that captures the user's question. The query should be no more than 100 characters. The query should be in natural language. The query should be in the same language as the user's question.
+
+    <user-question>
+    ${query}
+    </user-question>
+
+    <web-query>
+    </web-query>
+    `,
+  });
+
+  const results = await searchWeb({ query: webQuery, limit });
   const content = await Promise.all(
     results.map((result) => fetchWebContent(result.link, summarize))
   );
