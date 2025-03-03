@@ -81,6 +81,7 @@ export interface PublicSettings {
   cacheProvider: CacheProvider;
   webSearchEnabled: boolean;
   webSearchProvider: WebSearchProvider;
+  agenticModeEnabled: boolean;
 }
 
 export interface Settings extends PublicSettings {

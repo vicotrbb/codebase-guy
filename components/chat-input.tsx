@@ -21,6 +21,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { ChatReference, ChatReferenceType } from "@/types";
+import { usePublicSettings } from "@/lib/providers/SettingsProvider";
 
 interface Project {
   id: string;
@@ -46,6 +47,7 @@ interface ChatInputProps {
 }
 
 export function ChatInput({ onSendMessage }: ChatInputProps) {
+  const settings = usePublicSettings();
   const [message, setMessage] = useState("");
   const [chainOfThought, setChainOfThought] = useState(false);
   const [webSearch, setWebSearch] = useState(false);
@@ -443,7 +445,7 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
                 size="sm"
                 variant={webSearch && !ticketResolver ? "default" : "outline"}
                 onClick={() => !ticketResolver && setWebSearch(!webSearch)}
-                disabled={ticketResolver}
+                disabled={ticketResolver || !settings.webSearchEnabled}
               >
                 <SearchIcon className="h-4 w-4 mr-2" />
                 Web Search
@@ -451,7 +453,9 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
             </TooltipTrigger>
             <TooltipContent>
               <p>
-                {ticketResolver
+                {!settings.webSearchEnabled
+                  ? "Web search is disabled in settings"
+                  : ticketResolver
                   ? "This option is preset to enabled in Ticket Resolver mode."
                   : "Instruct the model to search the web for relevant information.\n- Slower\n- Supports fetching update-to-date information\n- Retrieves information from the web that might not be available on the codebase.\n- Useful for addressing bugs."}
               </p>
@@ -465,7 +469,7 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
                 size="sm"
                 variant={agenticMode && !ticketResolver ? "default" : "outline"}
                 onClick={() => !ticketResolver && setAgenticMode(!agenticMode)}
-                disabled={ticketResolver}
+                disabled={ticketResolver || !settings.agenticModeEnabled}
               >
                 <ZapIcon className="h-4 w-4 mr-2" />
                 Agentic Mode
@@ -473,7 +477,9 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
             </TooltipTrigger>
             <TooltipContent>
               <p>
-                {ticketResolver
+                {!settings.agenticModeEnabled
+                  ? "Agentic mode is disabled in settings"
+                  : ticketResolver
                   ? "This option is preset to enabled in Ticket Resolver mode."
                   : "Allow the model to perform actions and changes on behalf of the user.\n- Use with caution\n- Can lead to unintended consequences."}
               </p>

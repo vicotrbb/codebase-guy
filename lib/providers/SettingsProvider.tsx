@@ -3,7 +3,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import type { PublicSettings } from "@/types";
 
-const SettingsContext = createContext<PublicSettings | null>(null);
+const SettingsContext = createContext<PublicSettings>({} as PublicSettings);
 
 export function usePublicSettings() {
   const context = useContext(SettingsContext);
@@ -14,8 +14,8 @@ export function usePublicSettings() {
 }
 
 export function SettingsProvider({ children }: { children: React.ReactNode }) {
-  const [publicSettings, setPublicSettings] = useState<PublicSettings | null>(
-    null
+  const [publicSettings, setPublicSettings] = useState<PublicSettings>(
+    {} as PublicSettings
   );
 
   useEffect(() => {
@@ -35,6 +35,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
           cacheProvider: settings.cacheProvider,
           webSearchEnabled: settings.webSearchEnabled,
           webSearchProvider: settings.webSearchProvider,
+          agenticModeEnabled: settings.agenticModeEnabled,
         };
 
         setPublicSettings(filteredSettings);
