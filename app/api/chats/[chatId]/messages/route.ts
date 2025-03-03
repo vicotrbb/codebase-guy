@@ -7,6 +7,9 @@ import {
   getCodeChunks,
   parseCodeChunksIntoRelatedProjects,
 } from "@/lib/embedding";
+import { ChatRole, UserChatMessage } from "@/types";
+import { PromptBuilder } from "@/lib/prompt";
+import { getWebSearchResults } from "@/lib/webSearcher";
 
 export async function GET(
   request: NextRequest,
@@ -33,11 +36,25 @@ export async function POST(
   { params }: { params: { chatId: string } }
 ) {
   try {
-    const { role, content, chainOfThought, webSearch } = await request.json();
+    const __request = await request.json();
+    const {
+      message,
+      references,
+      chainOfThought,
+      webSearch,
+      agenticMode,
+      ticketResolver,
+    } = __request as UserChatMessage;
 
     // Validate chat exists
     const chat = await prisma.chat.findUnique({
       where: { id: params.chatId },
+      include: {
+        chatMessage: {
+          orderBy: { createdAt: "desc" },
+          take: 4,
+        },
+      },
     });
 
     if (!chat) {
@@ -48,71 +65,48 @@ export async function POST(
     const userMessage = await prisma.chatMessage.create({
       data: {
         role: "user",
-        content,
+        content: message,
         referenceChatId: params.chatId,
       },
     });
 
-    // Process message and get AI response
     const settings = await getSettings();
-    const codeChunks = await getCodeChunks({ message: content });
-    const codeChunksContext = codeChunks
-      .map(
-        (chunk, idx) => `
-          Chunk ${idx + 1}
-          Project Name: ${chunk.projectName}
-          File Name: ${chunk.fileName}
-          Start Line: ${chunk.chunkStartLine}
-          End Line: ${chunk.chunkEndLine}
-          Description: ${chunk.description ?? "No description available"}
-          Code:
-          ${chunk.chunkText}
-          `
-      )
-      .join("\n");
 
-    const prompt = `
-      <role>
-      You are an expert software engineer.
-      </role>
+    // Fetch code chunks
+    const codeChunks = await getCodeChunks({ message });
 
-      <goal>
-      Your goal is to respond to the user's question based on the provided context. Remember that your main goal is to help the user understand the codebase, suggest changes, provide general advice and help them with their questions.
-      </goal>
+    // Fetch web search results
+    if (webSearch && settings.webSearchEnabled) {
+      const webSearchResults = await getWebSearchResults(message, 5);
+    }
 
-      <instructions>
-      You will receive a list of constraints that you must follow.
-      The context provided is a list of code chunks that are related to the user's question, the description of each code chunk and the start and end lines of the code chunk.
-      The context is extracted using RAG (Retrieval-Augmented Generation) technique.
-      </instructions>
+    // Render prompt
+    const promptBuilder = new PromptBuilder();
+    promptBuilder
+      .injectCodeChunksIntoContext(codeChunks)
+      .injectUserQuestion(message)
+      .useReferences(references);
 
-      <constraints>
-      - If you don't know the answer, just say "I don't know" and suggest the user to ask a different question that might be a better fit. However, always try to answer the question based on the context and available information.
-      - Your response must be in markdown format.
-      - Your response must be concise and to the point.
-      - Your response must be easy to understand, helpful and actionable.
-      - Your response must be in the same language as the user's question.
-      - You are allowed to provide code snippets in your response using the markdown format \`\`\`code\`\`\` or \`\`\`code\`\`\`language.
-      - If the user question requires code examples, you must provide code examples.
-      </constraints>
+    const prompt = promptBuilder.renderPrompt().getPrompt();
 
-      <context>
-      ${codeChunksContext}
-      </context>
+    console.log(prompt);
 
-      <user-question>
-      ${content}
-      </user-question>
-
-      <answer>
-      </answer>
-    `;
+    // Convert chat messages to input messages
+    // This allow us to use the chat history in the prompt
+    // The chat history is limited to the last 4 messages
+    const messages = chat.chatMessage.map((message) => ({
+      role: message.role as ChatRole,
+      content: message.content,
+    }));
+    const inputMessages = [
+      ...messages,
+      { role: "user" as ChatRole, content: prompt },
+    ];
 
     const modelResponse = await generateChatCompletion({
-      messages: [{ role: "user", content: prompt }],
+      messages: inputMessages,
       model: settings.strongModel,
     });
-
     const relatedProjects = parseCodeChunksIntoRelatedProjects(codeChunks);
 
     // Save assistant message

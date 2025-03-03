@@ -36,6 +36,7 @@ export enum ChatReferenceType {
 export interface ChatReference {
   referenceType: ChatReferenceType;
   referenceTarget: any;
+  referenceContent?: string;
 }
 
 export interface UserChatMessage {
@@ -124,6 +125,12 @@ export interface Chat {
   id: string;
   name: string;
   messages: ChatMessage[];
+}
+
+export interface WebSearchResult {
+  title: string;
+  link: string;
+  content: string;
 }
 
 export {};

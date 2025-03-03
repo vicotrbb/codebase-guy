@@ -74,7 +74,9 @@ export function ProjectsTable() {
                   <TableCell>
                     <ProjectStatusBadge status={project.status} />
                   </TableCell>
-                  <TableCell>{project.updatedAt}</TableCell>
+                  <TableCell>
+                    {new Date(project.updatedAt).toLocaleString()}
+                  </TableCell>
                   <TableCell>{project.syncState}%</TableCell>
                 </TableRow>
               ))}

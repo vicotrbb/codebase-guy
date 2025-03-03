@@ -99,6 +99,7 @@ export function ChatInterface() {
     chainOfThought: boolean;
     webSearch: boolean;
     agenticMode: boolean;
+    ticketResolver: boolean;
   }) => {
     const userMessage = {
       id: Date.now().toString(),
@@ -132,9 +133,11 @@ export function ChatInterface() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           role: "user",
-          content: options.message,
+          message: options.message,
           chainOfThought: options.chainOfThought,
           webSearch: options.webSearch,
+          agenticMode: options.agenticMode,
+          ticketResolver: options.ticketResolver,
         }),
       });
 

@@ -1,5 +1,6 @@
 import { AgentStatus, ProjectStatus } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/db";
 
 export async function POST(request: NextRequest) {
   try {

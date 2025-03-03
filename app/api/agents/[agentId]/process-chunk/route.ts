@@ -3,6 +3,7 @@ import { generateContent } from "@/lib/llm";
 import { getSettings } from "@/lib/settings";
 import { ProjectStatus } from "@prisma/client";
 import { type NextRequest, NextResponse } from "next/server";
+import prisma from "@/lib/db";
 
 export async function POST(
   request: NextRequest,
