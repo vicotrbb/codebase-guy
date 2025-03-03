@@ -144,6 +144,10 @@ model chatMessage {
   role    ChatRole @map("role")
   content String   @map("content")
   relatedProjects Json? @map("related_projects")
+  prompt String? @map("prompt")
+  chainOfThought String? @map("chain_of_thought")
+  webSearch Json? @map("web_search")
+  references Json? @map("references")
 
   referenceChat   chat   @relation(fields: [referenceChatId], references: [id])
   referenceChatId String @map("reference_chat_id")

@@ -1,6 +1,8 @@
 import { WebSearchProvider } from "@prisma/client";
 import { getSettings } from "./settings";
 import { WebSearchResult } from "@/types";
+import got from "got";
+import { generateContent } from "./llm";
 
 export async function searchWeb({
   query,
@@ -8,7 +10,7 @@ export async function searchWeb({
 }: {
   query: string;
   limit: number;
-}) {
+}): Promise<WebSearchResult[]> {
   const settings = await getSettings();
 
   if (settings.webSearchProvider === WebSearchProvider.SERPER) {
@@ -35,7 +37,7 @@ export async function searchWeb({
       const results = searchResults.organic.map((searchItem: any) => ({
         title: searchItem.title,
         link: searchItem.link,
-        snippet: searchItem.snippet,
+        content: null,
       }));
 
       return results;
@@ -47,10 +49,39 @@ export async function searchWeb({
   }
 }
 
-export const getWebSearchResults = async (
+export const fetchWebContent = async (
+  url: string,
+  summarize: boolean = false
+): Promise<string> => {
+  const response = await got(url, { responseType: "text" });
+  const body = response.body;
+
+  if (summarize) {
+    const settings = await getSettings();
+
+    const summarizedContent = await generateContent({
+      model: settings.weakModel,
+      prompt: `You are a helpful assistant that summarizes web content. Summarize the following content, focusing on the most important technical information:\n\n${body}`,
+    });
+
+    return summarizedContent;
+  }
+
+  return body;
+};
+
+export const searchWebByQuery = async (
   query: string,
-  limit: number = 5
+  limit: number = 5,
+  summarize: boolean = false
 ): Promise<WebSearchResult[]> => {
   const results = await searchWeb({ query, limit });
-  return results;
+  const content = await Promise.all(
+    results.map((result) => fetchWebContent(result.link, summarize))
+  );
+
+  return results.map((result, index) => ({
+    ...result,
+    content: content[index],
+  }));
 };

@@ -9,7 +9,8 @@ import {
 } from "@/lib/embedding";
 import { ChatRole, UserChatMessage } from "@/types";
 import { PromptBuilder } from "@/lib/prompt";
-import { getWebSearchResults } from "@/lib/webSearcher";
+import { searchWebByQuery } from "@/lib/webSearcher";
+import { enhanceReference } from "@/lib/references";
 
 export async function GET(
   request: NextRequest,
@@ -77,12 +78,26 @@ export async function POST(
 
     // Fetch code chunks
     const codeChunks = await getCodeChunks({ message });
-    promptBuilder.injectCodeChunksIntoContext(codeChunks);
+
+    if (codeChunks && codeChunks.length > 0) {
+      promptBuilder.injectCodeChunksIntoContext(codeChunks);
+    }
 
     // Fetch web search results
     if (webSearch && settings.webSearchEnabled) {
-      const webSearchResults = await getWebSearchResults(message, 5);
-      promptBuilder.injectWebSearchIntoContext(webSearchResults);
+      const webSearchResults = await searchWebByQuery(message, 5);
+
+      if (webSearchResults && webSearchResults.length > 0) {
+        promptBuilder.injectWebSearchIntoContext(webSearchResults);
+      }
+    }
+
+    if (references) {
+      const enhancedReferences = await Promise.all(
+        references.map(enhanceReference)
+      );
+
+      promptBuilder.useReferences(enhancedReferences);
     }
 
     // Render prompt
@@ -118,6 +133,10 @@ export async function POST(
         role: "assistant",
         content: modelResponse,
         relatedProjects: relatedProjects as any,
+        prompt,
+        chainOfThought: promptBuilder.getCot,
+        webSearch: promptBuilder.getWebSearch as any,
+        references: promptBuilder.getReferences as any,
         referenceChatId: params.chatId,
       },
     });

@@ -12,6 +12,8 @@ export class PromptBuilder {
   private prompt: string;
 
   private cot: string; // Chain of thought
+  private references?: ChatReference[]; // References
+  private webSearch?: WebSearchResult[]; // Web search
 
   private isRendered: boolean;
 
@@ -62,6 +64,8 @@ export class PromptBuilder {
   }
 
   public useReferences(references: ChatReference[] | undefined): this {
+    this.references = references;
+
     if (!references || references.length === 0) {
       return this;
     }
@@ -138,6 +142,7 @@ export class PromptBuilder {
   }
 
   public injectWebSearchIntoContext(webSearch: WebSearchResult[]): this {
+    this.webSearch = webSearch;
     const webSearchContent = webSearch
       .map((result) => `- ${result.title}\n${result.content}`)
       .join("\n");
@@ -207,5 +212,21 @@ export class PromptBuilder {
     }
 
     return this.prompt;
+  }
+
+  public toString(): string {
+    return this.getPrompt();
+  }
+
+  get getCot(): string {
+    return this.cot;
+  }
+
+  get getReferences(): ChatReference[] | null {
+    return this.references ?? null;
+  }
+
+  get getWebSearch(): WebSearchResult[] | null {
+    return this.webSearch ?? null;
   }
 }
