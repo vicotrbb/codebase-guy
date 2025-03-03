@@ -143,6 +143,7 @@ model chatMessage {
   id      String   @id @default(uuid()) @map("id")
   role    ChatRole @map("role")
   content String   @map("content")
+  relatedProjects Json? @map("related_projects")
 
   referenceChat   chat   @relation(fields: [referenceChatId], references: [id])
   referenceChatId String @map("reference_chat_id")

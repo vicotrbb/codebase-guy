@@ -27,6 +27,7 @@ CREATE TABLE "agent" (
     "last_heart_beat_at" TIMESTAMP(3) NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
+
     CONSTRAINT "agent_pkey" PRIMARY KEY ("id")
 );
 
@@ -38,6 +39,7 @@ CREATE TABLE "project" (
     "sync_state" INTEGER NOT NULL DEFAULT 0,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
+
     CONSTRAINT "project_pkey" PRIMARY KEY ("id")
 );
 
@@ -57,6 +59,7 @@ CREATE TABLE "code_embedding" (
     "embedding" vector,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
+
     CONSTRAINT "code_embedding_pkey" PRIMARY KEY ("id")
 );
 
@@ -83,6 +86,7 @@ CREATE TABLE "settings" (
     "allow_agentic_mode" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
+
     CONSTRAINT "settings_pkey" PRIMARY KEY ("id")
 );
 
@@ -92,6 +96,7 @@ CREATE TABLE "chat" (
     "name" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
+
     CONSTRAINT "chat_pkey" PRIMARY KEY ("id")
 );
 
@@ -100,9 +105,11 @@ CREATE TABLE "chat_message" (
     "id" TEXT NOT NULL,
     "role" "chat_role" NOT NULL,
     "content" TEXT NOT NULL,
+    "related_projects" JSONB,
     "reference_chat_id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
+
     CONSTRAINT "chat_message_pkey" PRIMARY KEY ("id")
 );
 
@@ -110,7 +117,4 @@ CREATE TABLE "chat_message" (
 CREATE UNIQUE INDEX "settings_guy_name_key" ON "settings"("guy_name");
 
 -- AddForeignKey
-ALTER TABLE
-    "chat_message"
-ADD
-    CONSTRAINT "chat_message_reference_chat_id_fkey" FOREIGN KEY ("reference_chat_id") REFERENCES "chat"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "chat_message" ADD CONSTRAINT "chat_message_reference_chat_id_fkey" FOREIGN KEY ("reference_chat_id") REFERENCES "chat"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
