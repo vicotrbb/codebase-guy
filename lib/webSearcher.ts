@@ -1,5 +1,6 @@
 import { WebSearchProvider } from "@prisma/client";
 import { getSettings } from "./settings";
+import { WebSearchResult } from "@/types";
 
 export async function searchWeb({
   query,
@@ -46,7 +47,10 @@ export async function searchWeb({
   }
 }
 
-export const getWebSearchResults = async (query: string, limit: number = 5) => {
+export const getWebSearchResults = async (
+  query: string,
+  limit: number = 5
+): Promise<WebSearchResult[]> => {
   const results = await searchWeb({ query, limit });
   return results;
 };

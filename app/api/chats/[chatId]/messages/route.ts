@@ -72,22 +72,25 @@ export async function POST(
 
     const settings = await getSettings();
 
+    // Prepare the prompt builder
+    const promptBuilder = new PromptBuilder();
+
     // Fetch code chunks
     const codeChunks = await getCodeChunks({ message });
+    promptBuilder.injectCodeChunksIntoContext(codeChunks);
 
     // Fetch web search results
     if (webSearch && settings.webSearchEnabled) {
       const webSearchResults = await getWebSearchResults(message, 5);
+      promptBuilder.injectWebSearchIntoContext(webSearchResults);
     }
 
     // Render prompt
-    const promptBuilder = new PromptBuilder();
-    promptBuilder
-      .injectCodeChunksIntoContext(codeChunks)
+    const prompt = promptBuilder
       .injectUserQuestion(message)
-      .useReferences(references);
-
-    const prompt = promptBuilder.renderPrompt().getPrompt();
+      .useReferences(references)
+      .renderPrompt()
+      .getPrompt();
 
     console.log(prompt);
 
@@ -124,6 +127,10 @@ export async function POST(
         userMessage,
         assistantMessage,
         relatedProjects,
+        chainOfThought,
+        webSearch,
+        agenticMode,
+        ticketResolver,
       },
       { status: 201 }
     );

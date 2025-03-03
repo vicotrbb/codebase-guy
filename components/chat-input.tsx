@@ -431,9 +431,13 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
             </TooltipTrigger>
             <TooltipContent>
               <p>
-                {ticketResolver
-                  ? "This option is preset to enabled in Ticket Resolver mode."
-                  : "Instruct the model to think through the problem step by step, reasoning about the problem first before any action or response.\n- More costly\n- Slower\n- More accurate"}
+                Instruct the model to think through the problem step by step,
+                reasoning about the problem first before any action or response.
+                <br />
+                - More costly
+                <br />
+                - Slower
+                <br />- More accurate
               </p>
             </TooltipContent>
           </Tooltip>
@@ -453,11 +457,15 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
             </TooltipTrigger>
             <TooltipContent>
               <p>
-                {!settings.webSearchEnabled
-                  ? "Web search is disabled in settings"
-                  : ticketResolver
-                  ? "This option is preset to enabled in Ticket Resolver mode."
-                  : "Instruct the model to search the web for relevant information.\n- Slower\n- Supports fetching update-to-date information\n- Retrieves information from the web that might not be available on the codebase.\n- Useful for addressing bugs."}
+                Instruct the model to search the web for relevant information.
+                <br />
+                - Slower
+                <br />
+                - Supports fetching update-to-date information
+                <br />
+                - Retrieves information from the web that might not be available
+                on the codebase.
+                <br />- Useful for addressing bugs.
               </p>
             </TooltipContent>
           </Tooltip>
@@ -477,11 +485,11 @@ export function ChatInput({ onSendMessage }: ChatInputProps) {
             </TooltipTrigger>
             <TooltipContent>
               <p>
-                {!settings.agenticModeEnabled
-                  ? "Agentic mode is disabled in settings"
-                  : ticketResolver
-                  ? "This option is preset to enabled in Ticket Resolver mode."
-                  : "Allow the model to perform actions and changes on behalf of the user.\n- Use with caution\n- Can lead to unintended consequences."}
+                Allow the model to perform actions and changes on behalf of the
+                user.
+                <br />
+                - Use with caution
+                <br />- Can lead to unintended consequences.
               </p>
             </TooltipContent>
           </Tooltip>

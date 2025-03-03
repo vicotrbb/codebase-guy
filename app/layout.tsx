@@ -3,7 +3,7 @@ import "./globals.css";
 import "@/lib/db";
 import "@/types";
 import { SettingsProvider } from "@/lib/providers/SettingsProvider";
-
+import { Toaster } from "@/components/ui/toaster";
 import type React from "react";
 import { Header } from "@/components/header";
 
@@ -22,6 +22,7 @@ export default function RootLayout({
         <SettingsProvider>
           <Header />
           <main className="flex-1 overflow-hidden">{children}</main>
+          <Toaster />
         </SettingsProvider>
       </body>
     </html>

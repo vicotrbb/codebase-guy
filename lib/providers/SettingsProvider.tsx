@@ -58,7 +58,7 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
         cacheProvider: settings.cacheProvider,
         webSearchEnabled: settings.webSearchEnabled,
         webSearchProvider: settings.webSearchProvider,
-        agenticModeEnabled: settings.agenticModeEnabled,
+        agenticModeEnabled: settings.allowAgenticMode,
       };
 
       setPublicSettings(filteredSettings);

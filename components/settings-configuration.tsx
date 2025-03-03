@@ -13,6 +13,7 @@ import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import debounce from "lodash/debounce";
 import { useSettingsRefresh } from "@/lib/providers/SettingsProvider";
+import { useToast } from "@/components/ui/use-toast";
 
 import {
   Form,
@@ -70,6 +71,7 @@ interface Model {
 export function SettingsConfiguration({
   topSaveButtonId,
 }: SettingsConfigurationProps) {
+  const { toast } = useToast();
   const router = useRouter();
   const refreshSettings = useSettingsRefresh();
   const [availableModels, setAvailableModels] = useState<Model[]>([]);
@@ -91,6 +93,9 @@ export function SettingsConfiguration({
   const cacheProvider = watch("cacheProvider");
   const webSearchEnabled = watch("webSearchEnabled");
   const webSearchProvider = watch("webSearchProvider");
+
+  const formState = form.formState;
+  const isDirty = formState.isDirty;
 
   const fetchModels = useCallback(
     async (provider: ModelProvider, overrideUrl?: string) => {
@@ -195,11 +200,31 @@ export function SettingsConfiguration({
 
       if (!response.ok) throw new Error("Failed to update settings");
 
+      // Reset the form with current data to clear dirty state
+      form.reset(data);
+
+      // Add immediate toast call with console log for debugging
+      console.log("Showing success toast");
+      toast({
+        title: "Settings saved",
+        description: "Your settings have been successfully updated.",
+        duration: 3000, // Explicitly set duration
+        variant: "default",
+      });
+
       // Refresh settings after successful update
       await refreshSettings();
       router.refresh();
     } catch (error) {
       console.error("Error updating settings:", error);
+      // Add immediate toast call with console log for debugging
+      console.log("Showing error toast");
+      toast({
+        title: "Error",
+        description: "Failed to save settings. Please try again.",
+        duration: 3000, // Explicitly set duration
+        variant: "destructive",
+      });
     }
   }
 
@@ -208,6 +233,7 @@ export function SettingsConfiguration({
       type="submit"
       onClick={() => form.handleSubmit(onSubmit)()}
       className="min-w-[100px]"
+      disabled={!isDirty}
     >
       Save changes
     </Button>
