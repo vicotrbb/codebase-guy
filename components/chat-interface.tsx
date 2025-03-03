@@ -6,7 +6,7 @@ import { ChatInput } from "@/components/chat-input";
 import { Sidebar } from "@/components/sidebar";
 import { ChatList } from "@/components/chat-list";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Message, Project } from "@/types";
+import { ChatReference, Message, Project } from "@/types";
 
 interface Chat {
   id: string;
@@ -87,6 +87,7 @@ export function ChatInterface() {
     webSearch: boolean;
     agenticMode: boolean;
     ticketResolver: boolean;
+    references?: ChatReference[];
   }) => {
     const userMessage = {
       id: Date.now().toString(),
@@ -121,6 +122,7 @@ export function ChatInterface() {
         body: JSON.stringify({
           role: "user",
           message: options.message,
+          references: options.references,
           chainOfThought: options.chainOfThought,
           webSearch: options.webSearch,
           agenticMode: options.agenticMode,

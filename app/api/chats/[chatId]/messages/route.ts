@@ -93,6 +93,8 @@ export async function POST(
       }
     }
 
+    console.log(__request);
+
     if (references) {
       const enhancedReferences = await Promise.all(
         references.map(enhanceReference)

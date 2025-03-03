@@ -11,13 +11,7 @@ import {
   GitGraphIcon,
 } from "lucide-react";
 import { useState } from "react";
-import type {
-  Message,
-  WebSearchResult,
-  ChatReference,
-  Project,
-  File,
-} from "@/types";
+import { ChatReferenceType, type Message, type Project } from "@/types";
 
 interface SidebarProps {
   hoveredProjects: Project[] | null;
@@ -191,7 +185,12 @@ export function Sidebar({
                           <h4 className="text-sm font-medium text-gray-900 mb-1">
                             {reference.referenceType}
                           </h4>
-                          {reference.referenceContent && (
+                          {reference.referenceTarget ===
+                          ChatReferenceType.PROJECT ? (
+                            <p className="text-xs text-gray-600 line-clamp-2">
+                              {reference.referenceTarget}
+                            </p>
+                          ) : (
                             <p className="text-xs text-gray-600 line-clamp-2">
                               {reference.referenceContent}
                             </p>
