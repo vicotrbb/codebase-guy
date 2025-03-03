@@ -12,6 +12,7 @@ import {
 import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import debounce from "lodash/debounce";
+import { useSettingsRefresh } from "@/lib/providers/SettingsProvider";
 
 import {
   Form,
@@ -70,6 +71,7 @@ export function SettingsConfiguration({
   topSaveButtonId,
 }: SettingsConfigurationProps) {
   const router = useRouter();
+  const refreshSettings = useSettingsRefresh();
   const [availableModels, setAvailableModels] = useState<Model[]>([]);
   const [mounted, setMounted] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -192,6 +194,9 @@ export function SettingsConfiguration({
       });
 
       if (!response.ok) throw new Error("Failed to update settings");
+
+      // Refresh settings after successful update
+      await refreshSettings();
       router.refresh();
     } catch (error) {
       console.error("Error updating settings:", error);
