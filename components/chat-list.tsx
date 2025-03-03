@@ -18,6 +18,7 @@ interface ChatListProps {
   currentChatId: string | null;
   onChatSelect: (chatId: string) => void;
   onNewChat: () => void;
+  isNewChat: boolean;
 }
 
 export function ChatList({
@@ -25,6 +26,7 @@ export function ChatList({
   currentChatId,
   onChatSelect,
   onNewChat,
+  isNewChat,
 }: ChatListProps) {
   return (
     <div className="w-64 border-r border-gray-200 bg-gray-50 h-full flex flex-col">
@@ -40,6 +42,15 @@ export function ChatList({
       </div>
       <ScrollArea className="flex-1">
         <div className="p-2 space-y-2">
+          {isNewChat && (
+            <Button variant="secondary" className="w-full justify-start">
+              <MessageCircle className="mr-2 h-4 w-4" />
+              <div className="flex flex-col items-start text-left">
+                <span className="text-sm truncate">New Chat</span>
+                <span className="text-xs text-gray-500">Just now</span>
+              </div>
+            </Button>
+          )}
           {chats.map((chat) => (
             <Button
               key={chat.id}

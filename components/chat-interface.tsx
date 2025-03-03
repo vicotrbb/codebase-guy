@@ -45,6 +45,7 @@ export function ChatInterface() {
     null
   );
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
+  const [isNewChat, setIsNewChat] = useState(false);
 
   const loadChats = async () => {
     try {
@@ -58,29 +59,7 @@ export function ChatInterface() {
   };
 
   useEffect(() => {
-    const initializeChat = async () => {
-      try {
-        await loadChats();
-        if (chats.length > 0) {
-          setCurrentChatId(chats[0].id);
-        } else {
-          const response = await fetch("/api/chats", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: "New Chat" }),
-          });
-          const chat = await response.json();
-          setCurrentChatId(chat.id);
-          setChats([chat]);
-        }
-      } catch (error) {
-        console.error("Error initializing chat:", error);
-      }
-    };
-
-    if (!currentChatId) {
-      initializeChat();
-    }
+    loadChats();
   }, []);
 
   useEffect(() => {
@@ -109,14 +88,18 @@ export function ChatInterface() {
     loadMessages();
   }, [currentChatId]);
 
+  const handleNewChat = () => {
+    setCurrentChatId(null);
+    setMessages([]);
+    setIsNewChat(true);
+  };
+
   const handleSendMessage = async (options: {
     message: string;
     chainOfThought: boolean;
     webSearch: boolean;
     agenticMode: boolean;
   }) => {
-    if (!currentChatId) return;
-
     const userMessage = {
       id: Date.now().toString(),
       role: "user" as const,
@@ -126,41 +109,45 @@ export function ChatInterface() {
     setIsLoading(true);
 
     try {
-      await fetch(`/api/chats/${currentChatId}/messages`, {
+      let chatId = currentChatId;
+
+      // Create new chat if this is the first message
+      if (!chatId) {
+        const chatResponse = await fetch("/api/chats", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ firstMessage: options.message }),
+        });
+
+        if (!chatResponse.ok) throw new Error("Failed to create chat");
+        const newChat = await chatResponse.json();
+        chatId = newChat.id;
+        setCurrentChatId(chatId);
+        setChats((prev) => [newChat, ...prev]);
+        setIsNewChat(false);
+      }
+
+      const response = await fetch(`/api/chats/${chatId}/messages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           role: "user",
           content: options.message,
+          chainOfThought: options.chainOfThought,
+          webSearch: options.webSearch,
         }),
       });
 
-      const aiResponse = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(options),
-      });
+      if (!response.ok) throw new Error("Failed to process message");
 
-      if (!aiResponse.ok) throw new Error("Failed to fetch response");
-
-      const data = await aiResponse.json();
-
-      await fetch(`/api/chats/${currentChatId}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          role: "assistant",
-          content: data.message,
-          relatedProjects: data.relatedProjects,
-        }),
-      });
+      const data = await response.json();
 
       setMessages((prev) => [
         ...prev,
         {
-          id: (Date.now() + 1).toString(),
+          id: data.assistantMessage.id,
           role: "assistant",
-          content: data.message,
+          content: data.assistantMessage.content,
           relatedProjects: data.relatedProjects,
         },
       ]);
@@ -196,29 +183,17 @@ export function ChatInterface() {
     }
   };
 
-  const handleNewChat = async () => {
-    try {
-      const response = await fetch("/api/chats", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: "New Chat" }),
-      });
-      const chat = await response.json();
-      setChats((prev) => [chat, ...prev]);
-      setCurrentChatId(chat.id);
-      setMessages([]);
-    } catch (error) {
-      console.error("Error creating new chat:", error);
-    }
-  };
-
   return (
     <div className="flex h-full bg-gray-100">
       <ChatList
         chats={chats}
         currentChatId={currentChatId}
-        onChatSelect={setCurrentChatId}
+        onChatSelect={(id) => {
+          setCurrentChatId(id);
+          setIsNewChat(false);
+        }}
         onNewChat={handleNewChat}
+        isNewChat={isNewChat}
       />
       <div className="flex-1 flex">
         <div className="flex-1 flex flex-col">
