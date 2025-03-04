@@ -143,7 +143,10 @@ export function chunkDirectory(
         processDirectory(fullPath);
       } else if (
         entry.isFile() &&
-        (entry.name.endsWith(".ts") || entry.name.endsWith(".tsx"))
+        (entry.name.endsWith(".ts") ||
+          entry.name.endsWith(".tsx") ||
+          entry.name.endsWith(".js") ||
+          entry.name.endsWith(".jsx"))
       ) {
         result[fullPath] = chunkFile(fullPath);
       }

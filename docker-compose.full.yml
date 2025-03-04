@@ -4,8 +4,7 @@ services:
   ollama:
     container_name: ollama
     image: ollama/ollama:latest
-    ports:
-      - "11434:11434"
+    network_mode: "host"
     restart: always
     volumes:
       - ollama:/root/.ollama
@@ -15,8 +14,7 @@ services:
     build:
       context: ./services/embedding
       dockerfile: Dockerfile
-    ports:
-      - "5050:5050"
+    network_mode: "host"
     restart: always
 
   codebase-guy:
@@ -24,26 +22,23 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
+    network_mode: "host"
     restart: always
 
   postgres:
     image: ankane/pgvector:latest
+    network_mode: "host"
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: codebase-guy
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     restart: always
 
   redis:
     image: redis:alpine
-    ports:
-      - "6379:6379"
+    network_mode: "host"
     volumes:
       - redisdata:/data
     restart: always
